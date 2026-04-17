@@ -7,6 +7,7 @@ const {
   getFixedAdminConfig,
 } = require("../utils/adminAccount");
 const { sendUserCredentialsEmail } = require("../utils/mailer");
+const { DEPARTMENT_OPTIONS } = require("../constants/departments");
 
 const buildAuthResponse = (user) => {
   const token = jwt.sign(
@@ -59,6 +60,10 @@ const register = async (req, res) => {
       });
     }
 
+    if (!DEPARTMENT_OPTIONS.includes(department.trim())) {
+      return res.status(400).json({ message: "Invalid department" });
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -67,7 +72,7 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       role: normalizedRole,
-      department,
+      department: department.trim(),
       performance,
       avatar,
     });

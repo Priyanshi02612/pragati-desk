@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+const {
+  DEPARTMENT_OPTIONS,
+} = require("../constants/departments");
 
 const userSchema = new mongoose.Schema(
   {
@@ -27,6 +30,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      enum: DEPARTMENT_OPTIONS,
     },
     performance: {
       type: Number,

@@ -7,6 +7,10 @@ import { InputField } from "../components/ui/InputField";
 import { Table } from "../components/ui/Table";
 import { Avatar } from "../components/ui/Avatar";
 import {
+  DEFAULT_DEPARTMENT,
+  DEPARTMENT_OPTIONS,
+} from "../constants/departments";
+import {
   DEFAULT_TICKET_PRIORITY,
   DEFAULT_TICKET_TYPE,
   TICKET_PRIORITIES,
@@ -29,7 +33,7 @@ export const AdminTicketsPage = () => {
     description: "",
     ticketType: DEFAULT_TICKET_TYPE,
     priority: DEFAULT_TICKET_PRIORITY,
-    department: "Support",
+    department: DEFAULT_DEPARTMENT,
     assignedLeaderId: leaders[0]?.id || "",
   });
 
@@ -140,7 +144,7 @@ export const AdminTicketsPage = () => {
           description: "",
           ticketType: DEFAULT_TICKET_TYPE,
           priority: DEFAULT_TICKET_PRIORITY,
-          department: "Support",
+          department: DEFAULT_DEPARTMENT,
           assignedLeaderId: leaders[0]?.id || "",
         });
       })
@@ -227,7 +231,12 @@ export const AdminTicketsPage = () => {
             </div>
             <InputField
               label="Department"
+              as="select"
               value={ticketForm.department}
+              options={DEPARTMENT_OPTIONS.map((department) => ({
+                value: department,
+                label: department,
+              }))}
               onChange={(event) =>
                 setTicketForm((current) => ({
                   ...current,

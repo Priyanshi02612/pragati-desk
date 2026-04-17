@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Notification = require("../models/Notification");
 const { pushNotificationToUser } = require("../utils/socketServer");
 const { normalizeRole } = require("../utils/roles");
+const { DEPARTMENT_OPTIONS } = require("../constants/departments");
 const {
   TICKET_TYPES,
   TICKET_PRIORITIES,
@@ -86,6 +87,10 @@ const createTicket = async (req, res) => {
 
     if (!TICKET_TYPES.includes(ticketType)) {
       return res.status(400).json({ message: "Invalid ticket type" });
+    }
+
+    if (!DEPARTMENT_OPTIONS.includes(department.trim())) {
+      return res.status(400).json({ message: "Invalid department" });
     }
 
     if (priority && !TICKET_PRIORITIES.includes(priority)) {

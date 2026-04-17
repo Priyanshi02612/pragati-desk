@@ -1,11 +1,15 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const {
+  DEFAULT_DEPARTMENT,
+  DEPARTMENT_OPTIONS,
+} = require("../constants/departments");
 
 const getFixedAdminConfig = () => ({
   name: (process.env.ADMIN_NAME || "Asha Verma").trim(),
   email: (process.env.ADMIN_EMAIL || "").trim().toLowerCase(),
   password: process.env.ADMIN_PASSWORD || "",
-  department: (process.env.ADMIN_DEPARTMENT || "Operations").trim(),
+  department: (process.env.ADMIN_DEPARTMENT || DEFAULT_DEPARTMENT).trim(),
   avatar: (process.env.ADMIN_AVATAR || "AV").trim(),
 });
 
@@ -14,6 +18,10 @@ const ensureFixedAdminUser = async () => {
 
   if (!config.email || !config.password) {
     throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must be configured");
+  }
+
+  if (!DEPARTMENT_OPTIONS.includes(config.department)) {
+    throw new Error("ADMIN_DEPARTMENT must match a supported department");
   }
 
   const existingAdmin = await User.findOne({ email: config.email });

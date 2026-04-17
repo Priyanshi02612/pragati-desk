@@ -6,6 +6,9 @@ const {
   DEFAULT_TICKET_PRIORITY,
   DEFAULT_TICKET_STATUS,
 } = require("../constants/tickets");
+const {
+  DEPARTMENT_OPTIONS,
+} = require("../constants/departments");
 
 const ticketSchema = new mongoose.Schema(
   {
@@ -50,6 +53,7 @@ const ticketSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      enum: DEPARTMENT_OPTIONS,
     },
   },
   {

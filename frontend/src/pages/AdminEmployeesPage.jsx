@@ -6,6 +6,10 @@ import { InputField } from "../components/ui/InputField";
 import { Modal } from "../components/ui/Modal";
 import { Table } from "../components/ui/Table";
 import { Avatar } from "../components/ui/Avatar";
+import {
+  DEFAULT_DEPARTMENT,
+  DEPARTMENT_OPTIONS,
+} from "../constants/departments";
 import { uploadImageToCloudinary } from "../services/cloudinaryApi";
 import { formatPercent } from "../utils/format";
 
@@ -20,7 +24,7 @@ export const AdminEmployeesPage = () => {
     email: "",
     password: "",
     role: "Employee",
-    department: "",
+    department: DEFAULT_DEPARTMENT,
     avatarFile: null,
     avatar: "",
   });
@@ -108,7 +112,7 @@ export const AdminEmployeesPage = () => {
                   email: "",
                   password: "",
                   role: "Employee",
-                  department: "",
+                  department: DEFAULT_DEPARTMENT,
                   avatarFile: null,
                   avatar: "",
                 });
@@ -171,7 +175,12 @@ export const AdminEmployeesPage = () => {
           />
           <InputField
             label="Department"
+            as="select"
             value={employeeForm.department}
+            options={DEPARTMENT_OPTIONS.map((department) => ({
+              value: department,
+              label: department,
+            }))}
             onChange={(event) =>
               setEmployeeForm((current) => ({
                 ...current,
