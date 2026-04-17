@@ -8,28 +8,28 @@ import {
   Ticket,
   UserSquare2,
   Users,
-} from 'lucide-react';
-import { NavLink } from 'react-router-dom';
-import { useAppContext } from '../../app/AppContext';
+} from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { useAppContext } from "../../app/AppContext";
 
 const roleConfig = {
   Admin: [
-    { label: 'Dashboard', to: '/admin', icon: LayoutDashboard, end: true },
-    { label: 'Employees', to: '/admin/employees', icon: Users },
-    { label: 'Tickets', to: '/admin/tickets', icon: Ticket },
-    { label: 'Performance', to: '/performance', icon: BarChart3 },
-    { label: 'Leaderboard', to: '/leaderboard', icon: Crown },
+    { label: "Dashboard", to: "/admin", icon: LayoutDashboard, end: true },
+    { label: "Employees", to: "/admin/employees", icon: Users },
+    { label: "Tickets", to: "/admin/tickets", icon: Ticket },
+    { label: "Performance", to: "/performance", icon: BarChart3 },
+    { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],
-  'Team Leader': [
-    { label: 'Overview', to: '/team-leader', icon: ShieldCheck, end: true },
-    { label: 'Tasks', to: '/team-leader/tasks', icon: ListTodo },
-    { label: 'Performance', to: '/performance', icon: BarChart3 },
-    { label: 'Leaderboard', to: '/leaderboard', icon: Crown },
+  "Team Leader": [
+    { label: "Overview", to: "/team-leader", icon: ShieldCheck, end: true },
+    { label: "Tasks", to: "/team-leader/tasks", icon: ListTodo },
+    { label: "Performance", to: "/performance", icon: BarChart3 },
+    { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],
   Employee: [
-    { label: 'My Tasks', to: '/employee', icon: UserSquare2, end: true },
-    { label: 'Performance', to: '/performance', icon: BarChart3 },
-    { label: 'Leaderboard', to: '/leaderboard', icon: Crown },
+    { label: "My Tasks", to: "/employee", icon: UserSquare2, end: true },
+    { label: "Performance", to: "/performance", icon: BarChart3 },
+    { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],
 };
 
@@ -44,7 +44,8 @@ export const Sidebar = () => {
           PragatiDesk
         </div>
         <p className="mt-4 text-sm text-brand-muted">
-          Employee task and performance management with role-based productivity views.
+          Employee task and performance management with role-based productivity
+          views.
         </p>
       </div>
 
@@ -59,8 +60,8 @@ export const Sidebar = () => {
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
                   isActive
-                    ? 'bg-brand-text text-white shadow-card'
-                    : 'text-brand-muted hover:bg-white hover:text-brand-text'
+                    ? "bg-brand-text text-white shadow-card"
+                    : "text-brand-muted hover:bg-white hover:text-brand-text"
                 }`
               }
               to={link.to}
@@ -73,7 +74,9 @@ export const Sidebar = () => {
       </nav>
 
       <div className="mt-auto rounded-3xl bg-slate-950 px-4 py-5 text-white">
-        <p className="text-xs uppercase tracking-[0.24em] text-white/60">Signed in as</p>
+        <p className="text-xs uppercase tracking-[0.24em] text-white/60">
+          Signed in as
+        </p>
         <p className="mt-2 text-base font-semibold">{currentUser.name}</p>
         <p className="text-sm text-white/70">{currentUser.role}</p>
         <button

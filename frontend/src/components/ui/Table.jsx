@@ -1,4 +1,8 @@
-export const Table = ({ columns, rows, emptyMessage = 'No records found.' }) => (
+export const Table = ({
+  columns,
+  rows,
+  emptyMessage = "No records found.",
+}) => (
   <div className="overflow-hidden rounded-3xl border border-brand-border/70">
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-brand-border/70 text-left text-sm">
@@ -16,7 +20,10 @@ export const Table = ({ columns, rows, emptyMessage = 'No records found.' }) => 
             rows.map((row) => (
               <tr key={row.id} className="transition hover:bg-slate-50/90">
                 {columns.map((column) => (
-                  <td key={`${row.id}-${column.key}`} className="px-4 py-3 text-brand-text">
+                  <td
+                    key={`${row.id}-${column.key}`}
+                    className="px-4 py-3 text-brand-text"
+                  >
                     {column.render ? column.render(row) : row[column.key]}
                   </td>
                 ))}
@@ -24,7 +31,10 @@ export const Table = ({ columns, rows, emptyMessage = 'No records found.' }) => 
             ))
           ) : (
             <tr>
-              <td className="px-4 py-8 text-center text-brand-muted" colSpan={columns.length}>
+              <td
+                className="px-4 py-8 text-center text-brand-muted"
+                colSpan={columns.length}
+              >
                 {emptyMessage}
               </td>
             </tr>

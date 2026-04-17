@@ -1,17 +1,17 @@
 export const Button = ({
   children,
-  className = '',
-  variant = 'primary',
-  type = 'button',
+  className = "",
+  variant = "primary",
+  type = "button",
   ...props
 }) => {
   const variants = {
-    primary: 'bg-brand-primary text-white hover:bg-emerald-700',
-    secondary: 'bg-brand-secondary text-white hover:bg-blue-800',
-    muted: 'bg-slate-100 text-brand-text hover:bg-slate-200',
-    ghost: 'bg-white/70 text-brand-text hover:bg-white',
-    danger: 'bg-brand-danger text-white hover:bg-red-700',
-    accent: 'bg-brand-accent text-white hover:bg-amber-600',
+    primary: "bg-brand-primary text-white hover:bg-emerald-700",
+    secondary: "bg-brand-secondary text-white hover:bg-blue-800",
+    muted: "bg-slate-100 text-brand-text hover:bg-slate-200",
+    ghost: "bg-white/70 text-brand-text hover:bg-white",
+    danger: "bg-brand-danger text-white hover:bg-red-700",
+    accent: "bg-brand-accent text-white hover:bg-amber-600",
   };
 
   return (

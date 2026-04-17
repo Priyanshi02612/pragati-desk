@@ -1,9 +1,9 @@
-import { Clock3, Play, Square, TriangleAlert } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
-import { TimerDisplay } from './TimerDisplay';
+import { Clock3, Play, Square, TriangleAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Badge } from "../ui/Badge";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
+import { TimerDisplay } from "./TimerDisplay";
 
 export const TaskCard = ({ task, assignee, ticket, onUpdate, onDelay }) => {
   const [isRunning, setIsRunning] = useState(false);
@@ -27,12 +27,12 @@ export const TaskCard = ({ task, assignee, ticket, onUpdate, onDelay }) => {
 
   const stopTimer = () => {
     setIsRunning(false);
-    onUpdate(task.id, { timeSpent: seconds, status: 'In Progress' });
+    onUpdate(task.id, { timeSpent: seconds, status: "In Progress" });
   };
 
   const completeTask = () => {
     setIsRunning(false);
-    onUpdate(task.id, { status: 'Completed', timeSpent: seconds });
+    onUpdate(task.id, { status: "Completed", timeSpent: seconds });
   };
 
   const submitDelay = () => {
@@ -47,21 +47,29 @@ export const TaskCard = ({ task, assignee, ticket, onUpdate, onDelay }) => {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-secondary">
             {task.ticketId}
           </p>
-          <h3 className="mt-2 text-lg font-semibold text-brand-text">{task.title}</h3>
+          <h3 className="mt-2 text-lg font-semibold text-brand-text">
+            {task.title}
+          </h3>
           {ticket ? (
             <div className="mt-3 rounded-2xl bg-slate-50 p-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted">
                 Ticket context
               </p>
-              <p className="mt-1 text-sm font-medium text-brand-text">{ticket.title}</p>
+              <p className="mt-1 text-sm font-medium text-brand-text">
+                {ticket.title}
+              </p>
               <div className="mt-2">
-                <Badge tone="bg-amber-50 text-amber-700">{ticket.ticketType}</Badge>
+                <Badge tone="bg-amber-50 text-amber-700">
+                  {ticket.ticketType}
+                </Badge>
               </div>
-              <p className="mt-1 text-sm leading-6 text-brand-muted">{ticket.description}</p>
+              <p className="mt-1 text-sm leading-6 text-brand-muted">
+                {ticket.description}
+              </p>
             </div>
           ) : null}
           <p className="mt-1 text-sm text-brand-muted">
-            Assigned to {assignee?.name || 'Unassigned'} • Due {task.dueDate}
+            Assigned to {assignee?.name || "Unassigned"} • Due {task.dueDate}
           </p>
         </div>
         <Badge>{task.status}</Badge>
@@ -80,7 +88,7 @@ export const TaskCard = ({ task, assignee, ticket, onUpdate, onDelay }) => {
           className="gap-2"
           onClick={() => {
             setIsRunning(true);
-            onUpdate(task.id, { status: 'In Progress' });
+            onUpdate(task.id, { status: "In Progress" });
           }}
         >
           <Play size={16} />

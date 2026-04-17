@@ -1,5 +1,5 @@
-import { Menu } from 'lucide-react';
-import { NotificationBell } from '../dashboard/NotificationBell';
+import { Menu } from "lucide-react";
+import { NotificationBell } from "../dashboard/NotificationBell";
 
 export const Topbar = ({ onMenuToggle }) => (
   <header className="mb-6 flex items-center justify-between gap-4">

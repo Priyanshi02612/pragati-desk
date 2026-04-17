@@ -1,26 +1,35 @@
-import { Activity, AlarmClockCheck, CheckCircle2, TrendingUp } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { useAppContext } from '../app/AppContext';
-import { TaskCard } from '../components/dashboard/TaskCard';
-import { StatCard } from '../components/dashboard/StatCard';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { InputField } from '../components/ui/InputField';
-import { Modal } from '../components/ui/Modal';
-import { ProgressBar } from '../components/ui/ProgressBar';
-import { formatNumber, formatPercent } from '../utils/format';
+import {
+  Activity,
+  AlarmClockCheck,
+  CheckCircle2,
+  TrendingUp,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { useAppContext } from "../app/AppContext";
+import { TaskCard } from "../components/dashboard/TaskCard";
+import { StatCard } from "../components/dashboard/StatCard";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { InputField } from "../components/ui/InputField";
+import { Modal } from "../components/ui/Modal";
+import { ProgressBar } from "../components/ui/ProgressBar";
+import { formatNumber, formatPercent } from "../utils/format";
 
 export const EmployeeDashboardPage = () => {
-  const { currentUser, submitDelayRequest, tasks, tickets, updateTask, users } = useAppContext();
+  const { currentUser, submitDelayRequest, tasks, tickets, updateTask, users } =
+    useAppContext();
   const [selectedTask, setSelectedTask] = useState(null);
-  const [delayReason, setDelayReason] = useState('');
+  const [delayReason, setDelayReason] = useState("");
 
   const myTasks = useMemo(
     () => tasks.filter((task) => task.assigneeId === currentUser.id),
     [currentUser.id, tasks],
   );
-  const completedTasks = myTasks.filter((task) => task.status === 'Completed').length;
-  const totalHours = myTasks.reduce((sum, task) => sum + task.timeSpent, 0) / 3600;
+  const completedTasks = myTasks.filter(
+    (task) => task.status === "Completed",
+  ).length;
+  const totalHours =
+    myTasks.reduce((sum, task) => sum + task.timeSpent, 0) / 3600;
 
   return (
     <div className="space-y-6">
@@ -50,7 +59,7 @@ export const EmployeeDashboardPage = () => {
           label="Personal Score"
           value={formatPercent(currentUser.performance)}
           helper="Performance score this month"
-          tone={currentUser.performance < 85 ? 'danger' : 'primary'}
+          tone={currentUser.performance < 85 ? "danger" : "primary"}
         />
       </div>
 
@@ -58,7 +67,9 @@ export const EmployeeDashboardPage = () => {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="section-title">Personal Performance</h2>
-            <p className="section-copy">Stay above the 85% benchmark with consistent progress.</p>
+            <p className="section-copy">
+              Stay above the 85% benchmark with consistent progress.
+            </p>
           </div>
           <div className="w-full max-w-xs">
             <div className="mb-2 flex justify-between text-sm font-medium text-brand-muted">
@@ -75,10 +86,13 @@ export const EmployeeDashboardPage = () => {
               <div key={user.id} className="rounded-3xl bg-slate-50 p-5">
                 <p className="text-sm text-brand-muted">Improvement area</p>
                 <h3 className="mt-2 text-lg font-semibold text-brand-text">
-                  {user.performance < 85 ? 'Reduce delay ratio' : 'Maintain delivery rhythm'}
+                  {user.performance < 85
+                    ? "Reduce delay ratio"
+                    : "Maintain delivery rhythm"}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-brand-muted">
-                  Focus on updating task status quickly and logging blocker context early.
+                  Focus on updating task status quickly and logging blocker
+                  context early.
                 </p>
               </div>
             ))}
@@ -88,7 +102,9 @@ export const EmployeeDashboardPage = () => {
       <div>
         <div className="mb-5">
           <h2 className="section-title">Assigned Tasks</h2>
-          <p className="section-copy">Track time, complete work, or raise a delay request with context.</p>
+          <p className="section-copy">
+            Track time, complete work, or raise a delay request with context.
+          </p>
         </div>
         <div className="grid gap-4 xl:grid-cols-2">
           {myTasks.map((task) => (
@@ -110,7 +126,7 @@ export const EmployeeDashboardPage = () => {
         isOpen={Boolean(selectedTask)}
         onClose={() => {
           setSelectedTask(null);
-          setDelayReason('');
+          setDelayReason("");
         }}
       >
         <form
@@ -119,7 +135,7 @@ export const EmployeeDashboardPage = () => {
             event.preventDefault();
             submitDelayRequest(selectedTask.id, delayReason);
             setSelectedTask(null);
-            setDelayReason('');
+            setDelayReason("");
           }}
         >
           <InputField
@@ -135,7 +151,7 @@ export const EmployeeDashboardPage = () => {
               variant="muted"
               onClick={() => {
                 setSelectedTask(null);
-                setDelayReason('');
+                setDelayReason("");
               }}
             >
               Cancel

@@ -1,6 +1,6 @@
-import { Bell } from 'lucide-react';
-import { useState } from 'react';
-import { useAppContext } from '../../app/AppContext';
+import { Bell } from "lucide-react";
+import { useState } from "react";
+import { useAppContext } from "../../app/AppContext";
 
 export const NotificationBell = () => {
   const [open, setOpen] = useState(false);
@@ -9,7 +9,7 @@ export const NotificationBell = () => {
   const filtered = notifications.filter(
     (notification) =>
       notification.role === currentUser.role ||
-      (currentUser.role === 'Admin' && notification.type === 'performance'),
+      (currentUser.role === "Admin" && notification.type === "performance"),
   );
   const unreadCount = filtered.filter((item) => !item.read).length;
 
@@ -32,8 +32,12 @@ export const NotificationBell = () => {
       {open ? (
         <div className="panel absolute right-0 top-14 z-20 w-80 p-3">
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-brand-text">Notifications</h3>
-            <span className="text-xs text-brand-muted">{filtered.length} alerts</span>
+            <h3 className="text-sm font-semibold text-brand-text">
+              Notifications
+            </h3>
+            <span className="text-xs text-brand-muted">
+              {filtered.length} alerts
+            </span>
           </div>
           <div className="space-y-2">
             {filtered.length ? (
@@ -41,13 +45,17 @@ export const NotificationBell = () => {
                 <button
                   key={notification.id}
                   className={`w-full rounded-2xl p-3 text-left transition ${
-                    notification.read ? 'bg-slate-50' : 'bg-emerald-50/60'
+                    notification.read ? "bg-slate-50" : "bg-emerald-50/60"
                   }`}
                   onClick={() => markNotificationRead(notification.id)}
                   type="button"
                 >
-                  <p className="text-sm font-semibold text-brand-text">{notification.title}</p>
-                  <p className="mt-1 text-xs leading-5 text-brand-muted">{notification.message}</p>
+                  <p className="text-sm font-semibold text-brand-text">
+                    {notification.title}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-brand-muted">
+                    {notification.message}
+                  </p>
                 </button>
               ))
             ) : (

@@ -6,7 +6,7 @@ import {
   tasks,
   tickets,
   users,
-} from '../data/mockData';
+} from "../data/mockData";
 
 export const getInitialState = () => ({
   users,
@@ -20,9 +20,9 @@ export const getInitialState = () => ({
 
 export const loginAsRole = (role) => {
   const userByRole = {
-    Admin: users.find((user) => user.role === 'Admin'),
-    'Team Leader': users.find((user) => user.role === 'Team Leader'),
-    Employee: users.find((user) => user.role === 'Employee'),
+    Admin: users.find((user) => user.role === "Admin"),
+    "Team Leader": users.find((user) => user.role === "Team Leader"),
+    Employee: users.find((user) => user.role === "Employee"),
   };
 
   return userByRole[role];

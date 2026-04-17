@@ -1,11 +1,17 @@
-import { Card } from '../ui/Card';
+import { Card } from "../ui/Card";
 
-export const StatCard = ({ icon: Icon, label, value, helper, tone = 'primary' }) => {
+export const StatCard = ({
+  icon: Icon,
+  label,
+  value,
+  helper,
+  tone = "primary",
+}) => {
   const toneClasses = {
-    primary: 'bg-emerald-50 text-brand-primary',
-    secondary: 'bg-blue-50 text-brand-secondary',
-    accent: 'bg-amber-50 text-brand-accent',
-    danger: 'bg-rose-50 text-brand-danger',
+    primary: "bg-emerald-50 text-brand-primary",
+    secondary: "bg-blue-50 text-brand-secondary",
+    accent: "bg-amber-50 text-brand-accent",
+    danger: "bg-rose-50 text-brand-danger",
   };
 
   return (

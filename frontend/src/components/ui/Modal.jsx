@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X } from "lucide-react";
 
 export const Modal = ({ title, description, isOpen, onClose, children }) => {
   if (!isOpen) {
@@ -20,7 +20,9 @@ export const Modal = ({ title, description, isOpen, onClose, children }) => {
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h3 className="text-xl font-semibold text-brand-text">{title}</h3>
-            {description ? <p className="mt-1 text-sm text-brand-muted">{description}</p> : null}
+            {description ? (
+              <p className="mt-1 text-sm text-brand-muted">{description}</p>
+            ) : null}
           </div>
           <button
             className="rounded-full p-2 text-brand-muted transition hover:bg-slate-100 hover:text-brand-text"

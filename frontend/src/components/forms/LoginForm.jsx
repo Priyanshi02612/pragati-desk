@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { ArrowRight, BriefcaseBusiness } from 'lucide-react';
-import { roles } from '../../data/mockData';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
-import { InputField } from '../ui/InputField';
+import { useState } from "react";
+import { ArrowRight, BriefcaseBusiness } from "lucide-react";
+import { roles } from "../../data/mockData";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
+import { InputField } from "../ui/InputField";
 
 export const LoginForm = ({ onLogin }) => {
   const [form, setForm] = useState({
-    email: '',
-    password: '',
-    role: 'Admin',
+    email: "",
+    password: "",
+    role: "Admin",
   });
   const [errors, setErrors] = useState({});
 
@@ -17,15 +17,15 @@ export const LoginForm = ({ onLogin }) => {
     const nextErrors = {};
 
     if (!form.email.trim()) {
-      nextErrors.email = 'Email is required.';
+      nextErrors.email = "Email is required.";
     }
 
     if (!form.password.trim()) {
-      nextErrors.password = 'Password is required.';
+      nextErrors.password = "Password is required.";
     }
 
     if (!form.role) {
-      nextErrors.role = 'Please select a role.';
+      nextErrors.role = "Please select a role.";
     }
 
     setErrors(nextErrors);
@@ -51,21 +51,27 @@ export const LoginForm = ({ onLogin }) => {
             PragatiDesk
           </div>
           <h1 className="mt-10 max-w-xl text-5xl font-bold leading-tight">
-            Stay aligned on tickets, tasks, and performance from one calm workspace.
+            Stay aligned on tickets, tasks, and performance from one calm
+            workspace.
           </h1>
           <p className="mt-6 max-w-lg text-base leading-7 text-white/75">
-            A focused SaaS dashboard for admins, team leaders, and employees to move work
-            forward with better visibility and faster decisions.
+            A focused SaaS dashboard for admins, team leaders, and employees to
+            move work forward with better visibility and faster decisions.
           </p>
         </div>
 
         <div className="relative grid gap-4 md:grid-cols-3">
-          {['Role-based views', 'Task timers', 'Performance insights'].map((item) => (
-            <div key={item} className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <p className="text-sm font-medium text-white/70">Feature</p>
-              <p className="mt-2 text-lg font-semibold">{item}</p>
-            </div>
-          ))}
+          {["Role-based views", "Task timers", "Performance insights"].map(
+            (item) => (
+              <div
+                key={item}
+                className="rounded-3xl border border-white/10 bg-white/5 p-4"
+              >
+                <p className="text-sm font-medium text-white/70">Feature</p>
+                <p className="mt-2 text-lg font-semibold">{item}</p>
+              </div>
+            ),
+          )}
         </div>
       </section>
 
@@ -75,7 +81,9 @@ export const LoginForm = ({ onLogin }) => {
             <div className="inline-flex rounded-2xl bg-emerald-50 p-3 text-brand-primary">
               <BriefcaseBusiness size={22} />
             </div>
-            <h2 className="mt-5 text-3xl font-bold text-brand-text">Welcome back</h2>
+            <h2 className="mt-5 text-3xl font-bold text-brand-text">
+              Welcome back
+            </h2>
             <p className="mt-2 text-sm text-brand-muted">
               Sign in with a role to preview the full PragatiDesk experience.
             </p>
@@ -87,7 +95,12 @@ export const LoginForm = ({ onLogin }) => {
               placeholder="you@pragatidesk.com"
               value={form.email}
               error={errors.email}
-              onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  email: event.target.value,
+                }))
+              }
             />
             <InputField
               label="Password"
@@ -96,7 +109,10 @@ export const LoginForm = ({ onLogin }) => {
               value={form.password}
               error={errors.password}
               onChange={(event) =>
-                setForm((current) => ({ ...current, password: event.target.value }))
+                setForm((current) => ({
+                  ...current,
+                  password: event.target.value,
+                }))
               }
             />
             <InputField
@@ -105,7 +121,9 @@ export const LoginForm = ({ onLogin }) => {
               value={form.role}
               error={errors.role}
               options={roles.map((role) => ({ value: role, label: role }))}
-              onChange={(event) => setForm((current) => ({ ...current, role: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, role: event.target.value }))
+              }
             />
 
             <Button className="w-full justify-between px-5 py-3" type="submit">
@@ -115,8 +133,8 @@ export const LoginForm = ({ onLogin }) => {
           </form>
 
           <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-brand-muted">
-            Demo access works with any email/password pair. Role selection controls the dashboard
-            view.
+            Demo access works with any email/password pair. Role selection
+            controls the dashboard view.
           </div>
         </Card>
       </section>

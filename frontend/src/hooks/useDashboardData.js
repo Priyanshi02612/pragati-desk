@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
-import { getInitialState, loginAsRole } from '../services/mockApi';
+import { useEffect, useMemo, useState } from "react";
+import { getInitialState, loginAsRole } from "../services/mockApi";
 
-const STORAGE_KEY = 'pragatidesk-session';
+const STORAGE_KEY = "pragatidesk-session";
 
 export const useDashboardData = () => {
   const [data, setData] = useState(getInitialState);
@@ -20,12 +20,17 @@ export const useDashboardData = () => {
   }, [currentUser]);
 
   const metrics = useMemo(() => {
-    const employees = data.users.filter((user) => user.role === 'Employee');
-    const activeTickets = data.tickets.filter((ticket) => ticket.status === 'Open');
-    const completedTasks = data.tasks.filter((task) => task.status === 'Completed');
-    const delayedTasks = data.tasks.filter((task) => task.status === 'Delayed');
+    const employees = data.users.filter((user) => user.role === "Employee");
+    const activeTickets = data.tickets.filter(
+      (ticket) => ticket.status === "Open",
+    );
+    const completedTasks = data.tasks.filter(
+      (task) => task.status === "Completed",
+    );
+    const delayedTasks = data.tasks.filter((task) => task.status === "Delayed");
     const averagePerformance = employees.length
-      ? employees.reduce((sum, employee) => sum + employee.performance, 0) / employees.length
+      ? employees.reduce((sum, employee) => sum + employee.performance, 0) /
+        employees.length
       : 0;
 
     return {
@@ -49,9 +54,9 @@ export const useDashboardData = () => {
     const employee = {
       id: `employee-${Date.now()}`,
       avatar: payload.name
-        .split(' ')
+        .split(" ")
         .map((part) => part[0])
-        .join('')
+        .join("")
         .slice(0, 2)
         .toUpperCase(),
       performance: 90,
@@ -64,11 +69,11 @@ export const useDashboardData = () => {
       notifications: [
         {
           id: `NTF-${Date.now()}`,
-          title: 'New employee added',
+          title: "New employee added",
           message: `${employee.name} joined ${employee.department}.`,
-          type: 'assignment',
+          type: "assignment",
           read: false,
-          role: 'Admin',
+          role: "Admin",
         },
         ...current.notifications,
       ],
@@ -78,8 +83,8 @@ export const useDashboardData = () => {
   const createTicket = (payload) => {
     const ticket = {
       id: `TCK-${Math.floor(Math.random() * 900 + 100)}`,
-      status: 'Open',
-      createdAt: new Date().toISOString().split('T')[0],
+      status: "Open",
+      createdAt: new Date().toISOString().split("T")[0],
       ...payload,
     };
 
@@ -89,11 +94,11 @@ export const useDashboardData = () => {
       notifications: [
         {
           id: `NTF-${Date.now()}`,
-          title: 'Ticket created',
+          title: "Ticket created",
           message: `${ticket.id} assigned to a team leader.`,
-          type: 'assignment',
+          type: "assignment",
           read: false,
-          role: 'Team Leader',
+          role: "Team Leader",
         },
         ...current.notifications,
       ],
@@ -103,9 +108,9 @@ export const useDashboardData = () => {
   const createTask = (payload) => {
     const task = {
       id: `TSK-${Math.floor(Math.random() * 900 + 100)}`,
-      status: 'Pending',
+      status: "Pending",
       timeSpent: 0,
-      delayReason: '',
+      delayReason: "",
       ...payload,
     };
 
@@ -115,11 +120,11 @@ export const useDashboardData = () => {
       notifications: [
         {
           id: `NTF-${Date.now()}`,
-          title: 'New task assigned',
+          title: "New task assigned",
           message: `${task.title} was assigned to ${current.users.find((user) => user.id === task.assigneeId)?.name}.`,
-          type: 'assignment',
+          type: "assignment",
           read: false,
-          role: 'Employee',
+          role: "Employee",
         },
         ...current.notifications,
       ],
@@ -129,7 +134,9 @@ export const useDashboardData = () => {
   const updateTask = (taskId, updates) => {
     setData((current) => ({
       ...current,
-      tasks: current.tasks.map((task) => (task.id === taskId ? { ...task, ...updates } : task)),
+      tasks: current.tasks.map((task) =>
+        task.id === taskId ? { ...task, ...updates } : task,
+      ),
     }));
   };
 
@@ -137,7 +144,9 @@ export const useDashboardData = () => {
     setData((current) => ({
       ...current,
       tasks: current.tasks.map((task) =>
-        task.id === taskId ? { ...task, status: 'Delayed', delayReason: reason } : task,
+        task.id === taskId
+          ? { ...task, status: "Delayed", delayReason: reason }
+          : task,
       ),
       delayRequests: [
         {
@@ -145,18 +154,18 @@ export const useDashboardData = () => {
           taskId,
           employeeId: currentUser.id,
           reason,
-          status: 'Pending',
+          status: "Pending",
         },
         ...current.delayRequests,
       ],
       notifications: [
         {
           id: `NTF-${Date.now()}`,
-          title: 'Delay request submitted',
+          title: "Delay request submitted",
           message: `${currentUser.name} requested additional time.`,
-          type: 'delay',
+          type: "delay",
           read: false,
-          role: 'Team Leader',
+          role: "Team Leader",
         },
         ...current.notifications,
       ],
@@ -174,9 +183,9 @@ export const useDashboardData = () => {
           id: `NTF-${Date.now()}`,
           title: `Delay ${status.toLowerCase()}`,
           message: `A delay request has been ${status.toLowerCase()}.`,
-          type: 'delay',
+          type: "delay",
           read: false,
-          role: 'Employee',
+          role: "Employee",
         },
         ...current.notifications,
       ],

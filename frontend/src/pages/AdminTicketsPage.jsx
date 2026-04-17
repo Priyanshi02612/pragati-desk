@@ -1,51 +1,59 @@
-import { useMemo, useState } from 'react';
-import { useAppContext } from '../app/AppContext';
-import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { InputField } from '../components/ui/InputField';
-import { Table } from '../components/ui/Table';
-import { ticketTypes } from '../data/mockData';
+import { useMemo, useState } from "react";
+import { useAppContext } from "../app/AppContext";
+import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { InputField } from "../components/ui/InputField";
+import { Table } from "../components/ui/Table";
+import { ticketTypes } from "../data/mockData";
 
 export const AdminTicketsPage = () => {
   const { createTicket, tickets, users } = useAppContext();
   const [ticketForm, setTicketForm] = useState({
-    title: '',
-    description: '',
-    ticketType: 'Task',
-    priority: 'Medium',
-    department: 'Support',
-    assignedLeaderId: 'leader-1',
+    title: "",
+    description: "",
+    ticketType: "Task",
+    priority: "Medium",
+    department: "Support",
+    assignedLeaderId: "leader-1",
   });
 
   const leaders = useMemo(
-    () => users.filter((user) => user.role === 'Team Leader'),
+    () => users.filter((user) => user.role === "Team Leader"),
     [users],
   );
 
   const ticketColumns = [
-    { key: 'id', label: 'Ticket ID' },
-    { key: 'title', label: 'Title' },
+    { key: "id", label: "Ticket ID" },
+    { key: "title", label: "Title" },
     {
-      key: 'ticketType',
-      label: 'Type',
-      render: (row) => <Badge tone="bg-amber-50 text-amber-700">{row.ticketType}</Badge>,
+      key: "ticketType",
+      label: "Type",
+      render: (row) => (
+        <Badge tone="bg-amber-50 text-amber-700">{row.ticketType}</Badge>
+      ),
     },
     {
-      key: 'description',
-      label: 'Description',
-      render: (row) => <span className="max-w-md text-brand-muted">{row.description}</span>,
+      key: "description",
+      label: "Description",
+      render: (row) => (
+        <span className="max-w-md text-brand-muted">{row.description}</span>
+      ),
     },
-    { key: 'department', label: 'Department' },
+    { key: "department", label: "Department" },
     {
-      key: 'assignedLeaderId',
-      label: 'Assigned Leader',
-      render: (row) => users.find((user) => user.id === row.assignedLeaderId)?.name || 'Unknown',
+      key: "assignedLeaderId",
+      label: "Assigned Leader",
+      render: (row) =>
+        users.find((user) => user.id === row.assignedLeaderId)?.name ||
+        "Unknown",
     },
     {
-      key: 'priority',
-      label: 'Priority',
-      render: (row) => <Badge tone="bg-blue-50 text-brand-secondary">{row.priority}</Badge>,
+      key: "priority",
+      label: "Priority",
+      render: (row) => (
+        <Badge tone="bg-blue-50 text-brand-secondary">{row.priority}</Badge>
+      ),
     },
   ];
 
@@ -56,7 +64,8 @@ export const AdminTicketsPage = () => {
           <div className="mb-5">
             <h2 className="section-title">Create Ticket</h2>
             <p className="section-copy">
-              Add a title and clear description so team leaders and employees understand the work.
+              Add a title and clear description so team leaders and employees
+              understand the work.
             </p>
           </div>
           <form
@@ -65,12 +74,12 @@ export const AdminTicketsPage = () => {
               event.preventDefault();
               createTicket(ticketForm);
               setTicketForm({
-                title: '',
-                description: '',
-                ticketType: 'Task',
-                priority: 'Medium',
-                department: 'Support',
-                assignedLeaderId: leaders[0]?.id || '',
+                title: "",
+                description: "",
+                ticketType: "Task",
+                priority: "Medium",
+                department: "Support",
+                assignedLeaderId: leaders[0]?.id || "",
               });
             }}
           >
@@ -79,7 +88,10 @@ export const AdminTicketsPage = () => {
               value={ticketForm.title}
               placeholder="Enter ticket summary"
               onChange={(event) =>
-                setTicketForm((current) => ({ ...current, title: event.target.value }))
+                setTicketForm((current) => ({
+                  ...current,
+                  title: event.target.value,
+                }))
               }
             />
             <InputField
@@ -89,7 +101,10 @@ export const AdminTicketsPage = () => {
               value={ticketForm.description}
               placeholder="Explain the goal, expected output, and any important context."
               onChange={(event) =>
-                setTicketForm((current) => ({ ...current, description: event.target.value }))
+                setTicketForm((current) => ({
+                  ...current,
+                  description: event.target.value,
+                }))
               }
             />
             <div className="grid gap-4 sm:grid-cols-2">
@@ -97,9 +112,15 @@ export const AdminTicketsPage = () => {
                 label="Ticket type"
                 as="select"
                 value={ticketForm.ticketType}
-                options={ticketTypes.map((type) => ({ value: type, label: type }))}
+                options={ticketTypes.map((type) => ({
+                  value: type,
+                  label: type,
+                }))}
                 onChange={(event) =>
-                  setTicketForm((current) => ({ ...current, ticketType: event.target.value }))
+                  setTicketForm((current) => ({
+                    ...current,
+                    ticketType: event.target.value,
+                  }))
                 }
               />
               <InputField
@@ -107,12 +128,15 @@ export const AdminTicketsPage = () => {
                 as="select"
                 value={ticketForm.priority}
                 options={[
-                  { value: 'High', label: 'High' },
-                  { value: 'Medium', label: 'Medium' },
-                  { value: 'Low', label: 'Low' },
+                  { value: "High", label: "High" },
+                  { value: "Medium", label: "Medium" },
+                  { value: "Low", label: "Low" },
                 ]}
                 onChange={(event) =>
-                  setTicketForm((current) => ({ ...current, priority: event.target.value }))
+                  setTicketForm((current) => ({
+                    ...current,
+                    priority: event.target.value,
+                  }))
                 }
               />
             </div>
@@ -120,16 +144,25 @@ export const AdminTicketsPage = () => {
               label="Department"
               value={ticketForm.department}
               onChange={(event) =>
-                setTicketForm((current) => ({ ...current, department: event.target.value }))
+                setTicketForm((current) => ({
+                  ...current,
+                  department: event.target.value,
+                }))
               }
             />
             <InputField
               label="Assign to Team Leader"
               as="select"
               value={ticketForm.assignedLeaderId}
-              options={leaders.map((leader) => ({ value: leader.id, label: leader.name }))}
+              options={leaders.map((leader) => ({
+                value: leader.id,
+                label: leader.name,
+              }))}
               onChange={(event) =>
-                setTicketForm((current) => ({ ...current, assignedLeaderId: event.target.value }))
+                setTicketForm((current) => ({
+                  ...current,
+                  assignedLeaderId: event.target.value,
+                }))
               }
             />
             <Button
@@ -152,7 +185,8 @@ export const AdminTicketsPage = () => {
           <div className="mb-5">
             <h2 className="section-title">Tickets</h2>
             <p className="section-copy">
-              Manage ticket details separately from employee records for better focus.
+              Manage ticket details separately from employee records for better
+              focus.
             </p>
           </div>
           <Table columns={ticketColumns} rows={tickets} />

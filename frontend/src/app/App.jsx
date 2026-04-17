@@ -1,17 +1,17 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { AppContext } from './AppContext';
-import { Loader } from '../components/ui/Loader';
-import { useDashboardData } from '../hooks/useDashboardData';
-import { DashboardLayout } from '../layouts/DashboardLayout';
-import { AdminDashboardPage } from '../pages/AdminDashboardPage';
-import { AdminEmployeesPage } from '../pages/AdminEmployeesPage';
-import { AdminTicketsPage } from '../pages/AdminTicketsPage';
-import { EmployeeDashboardPage } from '../pages/EmployeeDashboardPage';
-import { LeaderboardPage } from '../pages/LeaderboardPage';
-import { LoginPage } from '../pages/LoginPage';
-import { PerformancePage } from '../pages/PerformancePage';
-import { TeamLeaderDashboardPage } from '../pages/TeamLeaderDashboardPage';
-import { TeamLeaderTasksPage } from '../pages/TeamLeaderTasksPage';
+import { Navigate, Route, Routes } from "react-router-dom";
+import { AppContext } from "./AppContext";
+import { Loader } from "../components/ui/Loader";
+import { useDashboardData } from "../hooks/useDashboardData";
+import { DashboardLayout } from "../layouts/DashboardLayout";
+import { AdminDashboardPage } from "../pages/AdminDashboardPage";
+import { AdminEmployeesPage } from "../pages/AdminEmployeesPage";
+import { AdminTicketsPage } from "../pages/AdminTicketsPage";
+import { EmployeeDashboardPage } from "../pages/EmployeeDashboardPage";
+import { LeaderboardPage } from "../pages/LeaderboardPage";
+import { LoginPage } from "../pages/LoginPage";
+import { PerformancePage } from "../pages/PerformancePage";
+import { TeamLeaderDashboardPage } from "../pages/TeamLeaderDashboardPage";
+import { TeamLeaderTasksPage } from "../pages/TeamLeaderTasksPage";
 
 const ProtectedRoute = ({ children, allowedRoles, currentUser }) => {
   if (!currentUser) {
@@ -20,9 +20,9 @@ const ProtectedRoute = ({ children, allowedRoles, currentUser }) => {
 
   if (!allowedRoles.includes(currentUser.role)) {
     const destinations = {
-      Admin: '/admin',
-      'Team Leader': '/team-leader',
-      Employee: '/employee',
+      Admin: "/admin",
+      "Team Leader": "/team-leader",
+      Employee: "/employee",
     };
 
     return <Navigate to={destinations[currentUser.role]} replace />;
@@ -36,11 +36,11 @@ const HomeRedirect = ({ currentUser }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (currentUser.role === 'Admin') {
+  if (currentUser.role === "Admin") {
     return <Navigate to="/admin" replace />;
   }
 
-  if (currentUser.role === 'Team Leader') {
+  if (currentUser.role === "Team Leader") {
     return <Navigate to="/team-leader" replace />;
   }
 
@@ -66,7 +66,7 @@ function App() {
           element={
             <ProtectedRoute
               currentUser={state.currentUser}
-              allowedRoles={['Admin', 'Team Leader', 'Employee']}
+              allowedRoles={["Admin", "Team Leader", "Employee"]}
             >
               <DashboardLayout />
             </ProtectedRoute>
@@ -75,7 +75,10 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Admin']}>
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Admin"]}
+              >
                 <AdminDashboardPage />
               </ProtectedRoute>
             }
@@ -83,7 +86,10 @@ function App() {
           <Route
             path="/admin/employees"
             element={
-              <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Admin']}>
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Admin"]}
+              >
                 <AdminEmployeesPage />
               </ProtectedRoute>
             }
@@ -91,7 +97,10 @@ function App() {
           <Route
             path="/admin/tickets"
             element={
-              <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Admin']}>
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Admin"]}
+              >
                 <AdminTicketsPage />
               </ProtectedRoute>
             }
@@ -99,7 +108,10 @@ function App() {
           <Route
             path="/team-leader"
             element={
-              <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Team Leader']}>
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Team Leader"]}
+              >
                 <TeamLeaderDashboardPage />
               </ProtectedRoute>
             }
@@ -107,7 +119,10 @@ function App() {
           <Route
             path="/team-leader/tasks"
             element={
-              <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Team Leader']}>
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Team Leader"]}
+              >
                 <TeamLeaderTasksPage />
               </ProtectedRoute>
             }
@@ -115,7 +130,10 @@ function App() {
           <Route
             path="/employee"
             element={
-              <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Employee']}>
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Employee"]}
+              >
                 <EmployeeDashboardPage />
               </ProtectedRoute>
             }

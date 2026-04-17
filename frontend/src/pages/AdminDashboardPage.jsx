@@ -1,14 +1,16 @@
-import { ArrowRight, Plus, TicketPlus, TrendingUp, Users2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAppContext } from '../app/AppContext';
-import { StatCard } from '../components/dashboard/StatCard';
-import { Badge } from '../components/ui/Badge';
-import { Card } from '../components/ui/Card';
-import { formatNumber, formatPercent } from '../utils/format';
+import { ArrowRight, Plus, TicketPlus, TrendingUp, Users2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAppContext } from "../app/AppContext";
+import { StatCard } from "../components/dashboard/StatCard";
+import { Badge } from "../components/ui/Badge";
+import { Card } from "../components/ui/Card";
+import { formatNumber, formatPercent } from "../utils/format";
 
 export const AdminDashboardPage = () => {
   const { metrics, tickets, users } = useAppContext();
-  const recentEmployees = users.filter((user) => user.role === 'Employee').slice(0, 3);
+  const recentEmployees = users
+    .filter((user) => user.role === "Employee")
+    .slice(0, 3);
   const recentTickets = tickets.slice(0, 3);
 
   return (
@@ -49,7 +51,8 @@ export const AdminDashboardPage = () => {
             <div>
               <h2 className="section-title">Employee Snapshot</h2>
               <p className="section-copy">
-                A quick view of current employee performance before you dive into the full list.
+                A quick view of current employee performance before you dive
+                into the full list.
               </p>
             </div>
             <Link
@@ -64,10 +67,16 @@ export const AdminDashboardPage = () => {
             {recentEmployees.map((employee) => (
               <div key={employee.id} className="rounded-3xl bg-slate-50 p-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-brand-text">{employee.name}</h3>
-                  <Badge>{employee.performance < 85 ? 'Delayed' : 'Completed'}</Badge>
+                  <h3 className="text-lg font-semibold text-brand-text">
+                    {employee.name}
+                  </h3>
+                  <Badge>
+                    {employee.performance < 85 ? "Delayed" : "Completed"}
+                  </Badge>
                 </div>
-                <p className="mt-2 text-sm text-brand-muted">{employee.department}</p>
+                <p className="mt-2 text-sm text-brand-muted">
+                  {employee.department}
+                </p>
                 <p className="mt-4 text-sm font-medium text-brand-text">
                   Performance: {formatPercent(employee.performance)}
                 </p>
@@ -81,7 +90,8 @@ export const AdminDashboardPage = () => {
             <div>
               <h2 className="section-title">Ticket Snapshot</h2>
               <p className="section-copy">
-                Review the latest tickets and jump into the full ticket management page.
+                Review the latest tickets and jump into the full ticket
+                management page.
               </p>
             </div>
             <Link
@@ -100,13 +110,21 @@ export const AdminDashboardPage = () => {
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
                       {ticket.id}
                     </p>
-                    <h3 className="mt-2 text-lg font-semibold text-brand-text">{ticket.title}</h3>
+                    <h3 className="mt-2 text-lg font-semibold text-brand-text">
+                      {ticket.title}
+                    </h3>
                     <div className="mt-3">
-                      <Badge tone="bg-amber-50 text-amber-700">{ticket.ticketType}</Badge>
+                      <Badge tone="bg-amber-50 text-amber-700">
+                        {ticket.ticketType}
+                      </Badge>
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-brand-muted">{ticket.description}</p>
+                    <p className="mt-2 text-sm leading-6 text-brand-muted">
+                      {ticket.description}
+                    </p>
                   </div>
-                  <Badge tone="bg-blue-50 text-brand-secondary">{ticket.priority}</Badge>
+                  <Badge tone="bg-blue-50 text-brand-secondary">
+                    {ticket.priority}
+                  </Badge>
                 </div>
               </div>
             ))}
