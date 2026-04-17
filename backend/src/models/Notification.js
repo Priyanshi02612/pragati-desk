@@ -26,6 +26,11 @@ const notificationSchema = new mongoose.Schema(
       enum: ["Admin", "Team Leader", "Employee"],
       required: true,
     },
+    targetUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
   {
     timestamps: true,

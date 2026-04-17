@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { getCurrentUser, loginUser, registerUser } from "../services/authApi";
 import { createAdminTicket } from "../services/adminApi";
+import {
+  getMyNotifications,
+  markNotificationAsRead,
+} from "../services/notificationApi";
 import { TOKEN_STORAGE_KEY } from "../services/api";
+import { connectNotificationSocket } from "../services/socket";
 import { toRoleLabel } from "../utils/roles";
 import { mockLeaderboard, mockPerformanceSeries } from "../data/mockData";
 
@@ -67,6 +72,37 @@ const normalizeTicket = (ticket) => {
   };
 };
 
+const normalizeNotification = (notification) => {
+  if (!notification) {
+    return null;
+  }
+
+  return {
+    ...notification,
+    id: notification.id || notification._id,
+    targetUserId:
+      typeof notification.targetUserId === "object"
+        ? notification.targetUserId?._id || notification.targetUserId?.id
+        : notification.targetUserId || null,
+  };
+};
+
+const mergeNotifications = (currentNotifications, incomingNotifications) => {
+  const notificationsById = new Map(
+    currentNotifications.map((notification) => [notification.id, notification]),
+  );
+
+  incomingNotifications.forEach((notification) => {
+    notificationsById.set(notification.id, notification);
+  });
+
+  return Array.from(notificationsById.values()).sort((left, right) => {
+    const leftTime = new Date(left.createdAt || 0).getTime();
+    const rightTime = new Date(right.createdAt || 0).getTime();
+    return rightTime - leftTime;
+  });
+};
+
 export const useDashboardData = () => {
   const [data, setData] = useState(initialData);
   const [currentUser, setCurrentUser] = useState(() => {
@@ -124,6 +160,68 @@ export const useDashboardData = () => {
     }
 
     window.localStorage.removeItem(STORAGE_KEY);
+  }, [currentUser]);
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (!token || !currentUser) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    const syncNotifications = () => {
+      getMyNotifications()
+        .then((response) => {
+          if (!isMounted) {
+            return;
+          }
+
+          const nextNotifications = (response.notifications || [])
+            .map(normalizeNotification)
+            .filter(Boolean);
+
+          setData((current) => ({
+            ...current,
+            notifications: mergeNotifications(
+              current.notifications,
+              nextNotifications,
+            ),
+          }));
+        })
+        .catch(() => {
+          // Keep the existing local notifications if polling fails.
+        });
+    };
+
+    syncNotifications();
+
+    const socket = connectNotificationSocket({
+      onNotification: (notification) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const normalizedNotification = normalizeNotification(notification);
+
+        if (!normalizedNotification) {
+          return;
+        }
+
+        setData((current) => ({
+          ...current,
+          notifications: mergeNotifications(current.notifications, [
+            normalizedNotification,
+          ]),
+        }));
+      },
+    });
+
+    return () => {
+      isMounted = false;
+      socket?.close();
+    };
   }, [currentUser]);
 
   const metrics = useMemo(() => {
@@ -198,6 +296,9 @@ export const useDashboardData = () => {
   const createTicket = async (payload) => {
     const response = await createAdminTicket(payload);
     const ticket = normalizeTicket(response.ticket);
+    const assignedLeaderName =
+      data.users.find((user) => user.id === ticket.assignedLeaderId)?.name ||
+      "a team leader";
 
     setData((current) => ({
       ...current,
@@ -206,10 +307,11 @@ export const useDashboardData = () => {
         {
           id: `NTF-${Date.now()}`,
           title: "Ticket created",
-          message: `${ticket.ticketNumber} assigned to a team leader.`,
+          message: `${ticket.ticketNumber} assigned to ${assignedLeaderName}.`,
           type: "assignment",
           read: false,
           role: "Team Leader",
+          targetUserId: ticket.assignedLeaderId,
         },
         ...current.notifications,
       ],
@@ -306,6 +408,10 @@ export const useDashboardData = () => {
   };
 
   const markNotificationRead = (notificationId) => {
+    markNotificationAsRead(notificationId).catch(() => {
+      // Keep local read state even if the sync request fails.
+    });
+
     setData((current) => ({
       ...current,
       notifications: current.notifications.map((item) =>

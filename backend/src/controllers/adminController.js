@@ -1,5 +1,7 @@
 const Ticket = require("../models/Ticket");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
+const { pushNotificationToUser } = require("../utils/socketServer");
 const { normalizeRole } = require("../utils/roles");
 const {
   TICKET_TYPES,
@@ -102,6 +104,16 @@ const createTicket = async (req, res) => {
       assignedLeaderId,
       department: department.trim(),
     });
+
+    const notification = await Notification.create({
+      title: "New ticket assigned",
+      message: `${ticketNumber} has been assigned to you.`,
+      type: "assignment",
+      role: "Team Leader",
+      targetUserId: assignedLeaderId,
+    });
+
+    pushNotificationToUser(assignedLeaderId, notification.toObject());
 
     return res.status(201).json({
       message: "Ticket created successfully",

@@ -1,17 +1,33 @@
 import { Bell } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../app/AppContext";
 
 export const NotificationBell = () => {
   const [open, setOpen] = useState(false);
   const { notifications, currentUser, markNotificationRead } = useAppContext();
+  const previousUnreadCount = useRef(0);
 
   const filtered = notifications.filter(
-    (notification) =>
-      notification.role === currentUser.role ||
-      (currentUser.role === "Admin" && notification.type === "performance"),
+    (notification) => {
+      if (notification.targetUserId) {
+        return notification.targetUserId === currentUser.id;
+      }
+
+      return (
+        notification.role === currentUser.role ||
+        (currentUser.role === "Admin" && notification.type === "performance")
+      );
+    },
   );
   const unreadCount = filtered.filter((item) => !item.read).length;
+
+  useEffect(() => {
+    if (unreadCount > previousUnreadCount.current) {
+      setOpen(true);
+    }
+
+    previousUnreadCount.current = unreadCount;
+  }, [unreadCount]);
 
   return (
     <div className="relative">
