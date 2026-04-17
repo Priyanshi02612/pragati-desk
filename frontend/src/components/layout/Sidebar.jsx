@@ -5,6 +5,7 @@ import {
   ListTodo,
   LogOut,
   ShieldCheck,
+  Ticket,
   UserSquare2,
   Users,
 } from 'lucide-react';
@@ -13,8 +14,9 @@ import { useAppContext } from '../../app/AppContext';
 
 const roleConfig = {
   Admin: [
-    { label: 'Overview', to: '/admin', icon: LayoutDashboard },
-    { label: 'Employees', to: '/admin', icon: Users },
+    { label: 'Dashboard', to: '/admin', icon: LayoutDashboard },
+    { label: 'Employees', to: '/admin/employees', icon: Users },
+    { label: 'Tickets', to: '/admin/tickets', icon: Ticket },
     { label: 'Performance', to: '/performance', icon: BarChart3 },
     { label: 'Leaderboard', to: '/leaderboard', icon: Crown },
   ],

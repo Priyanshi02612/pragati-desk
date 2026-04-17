@@ -52,6 +52,8 @@ export const tickets = [
   {
     id: 'TCK-101',
     title: 'Customer onboarding delays',
+    description:
+      'Audit the onboarding workflow, identify document bottlenecks, and reduce turnaround time for newly created support tickets.',
     priority: 'High',
     status: 'Open',
     assignedLeaderId: 'leader-1',
@@ -61,6 +63,8 @@ export const tickets = [
   {
     id: 'TCK-102',
     title: 'Quarterly productivity review',
+    description:
+      'Prepare the monthly and quarterly productivity summary, validate team scorecards, and align insights for manager review.',
     priority: 'Medium',
     status: 'Open',
     assignedLeaderId: 'leader-1',

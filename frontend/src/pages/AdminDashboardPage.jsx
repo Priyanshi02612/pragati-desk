@@ -1,71 +1,15 @@
-import { Plus, TicketPlus, TrendingUp, Users2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ArrowRight, Plus, TicketPlus, TrendingUp, Users2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAppContext } from '../app/AppContext';
 import { StatCard } from '../components/dashboard/StatCard';
 import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { InputField } from '../components/ui/InputField';
-import { Modal } from '../components/ui/Modal';
-import { Table } from '../components/ui/Table';
 import { formatNumber, formatPercent } from '../utils/format';
 
 export const AdminDashboardPage = () => {
-  const { createEmployee, createTicket, metrics, tickets, users } = useAppContext();
-  const [employeeModalOpen, setEmployeeModalOpen] = useState(false);
-  const [employeeForm, setEmployeeForm] = useState({
-    name: '',
-    email: '',
-    role: 'Employee',
-    department: '',
-  });
-  const [ticketForm, setTicketForm] = useState({
-    title: '',
-    priority: 'Medium',
-    department: 'Support',
-    assignedLeaderId: 'leader-1',
-  });
-
-  const leaders = useMemo(
-    () => users.filter((user) => user.role === 'Team Leader'),
-    [users],
-  );
-
-  const employees = useMemo(
-    () => users.filter((user) => user.role === 'Employee'),
-    [users],
-  );
-
-  const employeeColumns = [
-    { key: 'name', label: 'Employee' },
-    { key: 'department', label: 'Department' },
-    { key: 'email', label: 'Email' },
-    {
-      key: 'performance',
-      label: 'Performance',
-      render: (row) => (
-        <span className={row.performance < 85 ? 'font-semibold text-brand-danger' : ''}>
-          {formatPercent(row.performance)}
-        </span>
-      ),
-    },
-  ];
-
-  const ticketColumns = [
-    { key: 'id', label: 'Ticket ID' },
-    { key: 'title', label: 'Title' },
-    { key: 'department', label: 'Department' },
-    {
-      key: 'assignedLeaderId',
-      label: 'Assigned Leader',
-      render: (row) => users.find((user) => user.id === row.assignedLeaderId)?.name || 'Unknown',
-    },
-    {
-      key: 'priority',
-      label: 'Priority',
-      render: (row) => <Badge tone="bg-blue-50 text-brand-secondary">{row.priority}</Badge>,
-    },
-  ];
+  const { metrics, tickets, users } = useAppContext();
+  const recentEmployees = users.filter((user) => user.role === 'Employee').slice(0, 3);
+  const recentTickets = tickets.slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -99,162 +43,73 @@ export const AdminDashboardPage = () => {
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
-              <h2 className="section-title">Employees</h2>
-              <p className="section-copy">Track team capacity and individual performance at a glance.</p>
+              <h2 className="section-title">Employee Snapshot</h2>
+              <p className="section-copy">
+                A quick view of current employee performance before you dive into the full list.
+              </p>
             </div>
-            <Button onClick={() => setEmployeeModalOpen(true)}>Create employee</Button>
+            <Link
+              className="inline-flex items-center gap-2 rounded-2xl bg-brand-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              to="/admin/employees"
+            >
+              Manage employees
+              <ArrowRight size={16} />
+            </Link>
           </div>
-          <Table columns={employeeColumns} rows={employees} />
+          <div className="grid gap-4 md:grid-cols-3">
+            {recentEmployees.map((employee) => (
+              <div key={employee.id} className="rounded-3xl bg-slate-50 p-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-brand-text">{employee.name}</h3>
+                  <Badge>{employee.performance < 85 ? 'Delayed' : 'Completed'}</Badge>
+                </div>
+                <p className="mt-2 text-sm text-brand-muted">{employee.department}</p>
+                <p className="mt-4 text-sm font-medium text-brand-text">
+                  Performance: {formatPercent(employee.performance)}
+                </p>
+              </div>
+            ))}
+          </div>
         </Card>
 
         <Card>
-          <div className="mb-5">
-            <h2 className="section-title">Create Ticket</h2>
-            <p className="section-copy">Assign new workstreams directly to a team leader.</p>
-          </div>
-          <form
-            className="space-y-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              createTicket(ticketForm);
-              setTicketForm({
-                title: '',
-                priority: 'Medium',
-                department: 'Support',
-                assignedLeaderId: leaders[0]?.id || '',
-              });
-            }}
-          >
-            <InputField
-              label="Ticket title"
-              value={ticketForm.title}
-              placeholder="Enter ticket summary"
-              onChange={(event) =>
-                setTicketForm((current) => ({ ...current, title: event.target.value }))
-              }
-            />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <InputField
-                label="Priority"
-                as="select"
-                value={ticketForm.priority}
-                options={[
-                  { value: 'High', label: 'High' },
-                  { value: 'Medium', label: 'Medium' },
-                  { value: 'Low', label: 'Low' },
-                ]}
-                onChange={(event) =>
-                  setTicketForm((current) => ({ ...current, priority: event.target.value }))
-                }
-              />
-              <InputField
-                label="Department"
-                value={ticketForm.department}
-                onChange={(event) =>
-                  setTicketForm((current) => ({ ...current, department: event.target.value }))
-                }
-              />
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="section-title">Ticket Snapshot</h2>
+              <p className="section-copy">
+                Review the latest tickets and jump into the full ticket management page.
+              </p>
             </div>
-            <InputField
-              label="Assign to Team Leader"
-              as="select"
-              value={ticketForm.assignedLeaderId}
-              options={leaders.map((leader) => ({ value: leader.id, label: leader.name }))}
-              onChange={(event) =>
-                setTicketForm((current) => ({ ...current, assignedLeaderId: event.target.value }))
-              }
-            />
-            <Button
-              className="w-full disabled:cursor-not-allowed disabled:opacity-60"
-              type="submit"
-              variant="secondary"
-              disabled={!ticketForm.title.trim() || !ticketForm.assignedLeaderId}
+            <Link
+              className="inline-flex items-center gap-2 rounded-2xl bg-brand-secondary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
+              to="/admin/tickets"
             >
-              Submit ticket
-            </Button>
-          </form>
+              Manage tickets
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="space-y-4">
+            {recentTickets.map((ticket) => (
+              <div key={ticket.id} className="rounded-3xl bg-slate-50 p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
+                      {ticket.id}
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-brand-text">{ticket.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-brand-muted">{ticket.description}</p>
+                  </div>
+                  <Badge tone="bg-blue-50 text-brand-secondary">{ticket.priority}</Badge>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
-
-      <Card>
-        <div className="mb-5">
-          <h2 className="section-title">Tickets</h2>
-          <p className="section-copy">Current tickets assigned across departments and leaders.</p>
-        </div>
-        <Table columns={ticketColumns} rows={tickets} />
-      </Card>
-
-      <Modal
-        title="Create Employee"
-        description="Add a new employee profile with a role and department assignment."
-        isOpen={employeeModalOpen}
-        onClose={() => setEmployeeModalOpen(false)}
-      >
-        <form
-          className="space-y-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            createEmployee(employeeForm);
-            setEmployeeForm({ name: '', email: '', role: 'Employee', department: '' });
-            setEmployeeModalOpen(false);
-          }}
-        >
-          <InputField
-            label="Full name"
-            value={employeeForm.name}
-            onChange={(event) =>
-              setEmployeeForm((current) => ({ ...current, name: event.target.value }))
-            }
-          />
-          <InputField
-            label="Email"
-            value={employeeForm.email}
-            onChange={(event) =>
-              setEmployeeForm((current) => ({ ...current, email: event.target.value }))
-            }
-          />
-          <InputField
-            label="Role"
-            as="select"
-            value={employeeForm.role}
-            options={[
-              { value: 'Employee', label: 'Employee' },
-              { value: 'Team Leader', label: 'Team Leader' },
-              { value: 'Admin', label: 'Admin' },
-            ]}
-            onChange={(event) =>
-              setEmployeeForm((current) => ({ ...current, role: event.target.value }))
-            }
-          />
-          <InputField
-            label="Department"
-            value={employeeForm.department}
-            onChange={(event) =>
-              setEmployeeForm((current) => ({ ...current, department: event.target.value }))
-            }
-          />
-          <div className="flex justify-end gap-3">
-            <Button variant="muted" onClick={() => setEmployeeModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={
-                !employeeForm.name.trim() ||
-                !employeeForm.email.trim() ||
-                !employeeForm.department.trim()
-              }
-              className="disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Save employee
-            </Button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 };

@@ -11,7 +11,7 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import { formatNumber, formatPercent } from '../utils/format';
 
 export const EmployeeDashboardPage = () => {
-  const { currentUser, submitDelayRequest, tasks, updateTask, users } = useAppContext();
+  const { currentUser, submitDelayRequest, tasks, tickets, updateTask, users } = useAppContext();
   const [selectedTask, setSelectedTask] = useState(null);
   const [delayReason, setDelayReason] = useState('');
 
@@ -96,6 +96,7 @@ export const EmployeeDashboardPage = () => {
               key={task.id}
               task={task}
               assignee={currentUser}
+              ticket={tickets.find((ticket) => ticket.id === task.ticketId)}
               onUpdate={updateTask}
               onDelay={(item) => setSelectedTask(item)}
             />

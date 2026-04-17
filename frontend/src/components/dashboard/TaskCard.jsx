@@ -5,7 +5,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { TimerDisplay } from './TimerDisplay';
 
-export const TaskCard = ({ task, assignee, onUpdate, onDelay }) => {
+export const TaskCard = ({ task, assignee, ticket, onUpdate, onDelay }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [seconds, setSeconds] = useState(task.timeSpent);
 
@@ -48,6 +48,15 @@ export const TaskCard = ({ task, assignee, onUpdate, onDelay }) => {
             {task.ticketId}
           </p>
           <h3 className="mt-2 text-lg font-semibold text-brand-text">{task.title}</h3>
+          {ticket ? (
+            <div className="mt-3 rounded-2xl bg-slate-50 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted">
+                Ticket context
+              </p>
+              <p className="mt-1 text-sm font-medium text-brand-text">{ticket.title}</p>
+              <p className="mt-1 text-sm leading-6 text-brand-muted">{ticket.description}</p>
+            </div>
+          ) : null}
           <p className="mt-1 text-sm text-brand-muted">
             Assigned to {assignee?.name || 'Unassigned'} • Due {task.dueDate}
           </p>

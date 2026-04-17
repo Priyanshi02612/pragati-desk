@@ -4,6 +4,8 @@ import { Loader } from '../components/ui/Loader';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { AdminDashboardPage } from '../pages/AdminDashboardPage';
+import { AdminEmployeesPage } from '../pages/AdminEmployeesPage';
+import { AdminTicketsPage } from '../pages/AdminTicketsPage';
 import { EmployeeDashboardPage } from '../pages/EmployeeDashboardPage';
 import { LeaderboardPage } from '../pages/LeaderboardPage';
 import { LoginPage } from '../pages/LoginPage';
@@ -74,6 +76,22 @@ function App() {
             element={
               <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Admin']}>
                 <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/employees"
+            element={
+              <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Admin']}>
+                <AdminEmployeesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/tickets"
+            element={
+              <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Admin']}>
+                <AdminTicketsPage />
               </ProtectedRoute>
             }
           />
