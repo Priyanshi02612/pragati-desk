@@ -40,6 +40,14 @@ export const TeamLeaderTasksPage = () => {
     { key: 'title', label: 'Task' },
     { key: 'ticketId', label: 'Ticket' },
     {
+      key: 'ticketType',
+      label: 'Type',
+      render: (row) => {
+        const ticket = tickets.find((item) => item.id === row.ticketId);
+        return <Badge tone="bg-amber-50 text-amber-700">{ticket?.ticketType || 'Task'}</Badge>;
+      },
+    },
+    {
       key: 'assigneeId',
       label: 'Assigned To',
       render: (row) => users.find((user) => user.id === row.assigneeId)?.name || 'Unknown',
@@ -77,7 +85,10 @@ export const TeamLeaderTasksPage = () => {
               label="Ticket"
               as="select"
               value={taskForm.ticketId}
-              options={assignedTickets.map((ticket) => ({ value: ticket.id, label: ticket.title }))}
+              options={assignedTickets.map((ticket) => ({
+                value: ticket.id,
+                label: `${ticket.ticketType} • ${ticket.title}`,
+              }))}
               onChange={(event) =>
                 setTaskForm((current) => ({ ...current, ticketId: event.target.value }))
               }

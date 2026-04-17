@@ -101,6 +101,9 @@ export const AdminDashboardPage = () => {
                       {ticket.id}
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-brand-text">{ticket.title}</h3>
+                    <div className="mt-3">
+                      <Badge tone="bg-amber-50 text-amber-700">{ticket.ticketType}</Badge>
+                    </div>
                     <p className="mt-2 text-sm leading-6 text-brand-muted">{ticket.description}</p>
                   </div>
                   <Badge tone="bg-blue-50 text-brand-secondary">{ticket.priority}</Badge>

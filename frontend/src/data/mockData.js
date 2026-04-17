@@ -1,4 +1,5 @@
 export const roles = ['Admin', 'Team Leader', 'Employee'];
+export const ticketTypes = ['Bug', 'Task', 'Feature Request', 'Support', 'Improvement'];
 
 export const users = [
   {
@@ -54,6 +55,7 @@ export const tickets = [
     title: 'Customer onboarding delays',
     description:
       'Audit the onboarding workflow, identify document bottlenecks, and reduce turnaround time for newly created support tickets.',
+    ticketType: 'Improvement',
     priority: 'High',
     status: 'Open',
     assignedLeaderId: 'leader-1',
@@ -65,6 +67,7 @@ export const tickets = [
     title: 'Quarterly productivity review',
     description:
       'Prepare the monthly and quarterly productivity summary, validate team scorecards, and align insights for manager review.',
+    ticketType: 'Task',
     priority: 'Medium',
     status: 'Open',
     assignedLeaderId: 'leader-1',

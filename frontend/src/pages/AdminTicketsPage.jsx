@@ -5,12 +5,14 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { InputField } from '../components/ui/InputField';
 import { Table } from '../components/ui/Table';
+import { ticketTypes } from '../data/mockData';
 
 export const AdminTicketsPage = () => {
   const { createTicket, tickets, users } = useAppContext();
   const [ticketForm, setTicketForm] = useState({
     title: '',
     description: '',
+    ticketType: 'Task',
     priority: 'Medium',
     department: 'Support',
     assignedLeaderId: 'leader-1',
@@ -24,6 +26,11 @@ export const AdminTicketsPage = () => {
   const ticketColumns = [
     { key: 'id', label: 'Ticket ID' },
     { key: 'title', label: 'Title' },
+    {
+      key: 'ticketType',
+      label: 'Type',
+      render: (row) => <Badge tone="bg-amber-50 text-amber-700">{row.ticketType}</Badge>,
+    },
     {
       key: 'description',
       label: 'Description',
@@ -60,6 +67,7 @@ export const AdminTicketsPage = () => {
               setTicketForm({
                 title: '',
                 description: '',
+                ticketType: 'Task',
                 priority: 'Medium',
                 department: 'Support',
                 assignedLeaderId: leaders[0]?.id || '',
@@ -86,6 +94,15 @@ export const AdminTicketsPage = () => {
             />
             <div className="grid gap-4 sm:grid-cols-2">
               <InputField
+                label="Ticket type"
+                as="select"
+                value={ticketForm.ticketType}
+                options={ticketTypes.map((type) => ({ value: type, label: type }))}
+                onChange={(event) =>
+                  setTicketForm((current) => ({ ...current, ticketType: event.target.value }))
+                }
+              />
+              <InputField
                 label="Priority"
                 as="select"
                 value={ticketForm.priority}
@@ -98,14 +115,14 @@ export const AdminTicketsPage = () => {
                   setTicketForm((current) => ({ ...current, priority: event.target.value }))
                 }
               />
-              <InputField
-                label="Department"
-                value={ticketForm.department}
-                onChange={(event) =>
-                  setTicketForm((current) => ({ ...current, department: event.target.value }))
-                }
-              />
             </div>
+            <InputField
+              label="Department"
+              value={ticketForm.department}
+              onChange={(event) =>
+                setTicketForm((current) => ({ ...current, department: event.target.value }))
+              }
+            />
             <InputField
               label="Assign to Team Leader"
               as="select"
@@ -122,6 +139,7 @@ export const AdminTicketsPage = () => {
               disabled={
                 !ticketForm.title.trim() ||
                 !ticketForm.description.trim() ||
+                !ticketForm.ticketType ||
                 !ticketForm.assignedLeaderId
               }
             >

@@ -54,6 +54,9 @@ export const TaskCard = ({ task, assignee, ticket, onUpdate, onDelay }) => {
                 Ticket context
               </p>
               <p className="mt-1 text-sm font-medium text-brand-text">{ticket.title}</p>
+              <div className="mt-2">
+                <Badge tone="bg-amber-50 text-amber-700">{ticket.ticketType}</Badge>
+              </div>
               <p className="mt-1 text-sm leading-6 text-brand-muted">{ticket.description}</p>
             </div>
           ) : null}
