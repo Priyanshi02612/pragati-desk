@@ -30,7 +30,7 @@ export const AdminEmployeesPage = () => {
   );
 
   const employeeColumns = [
-    { key: "name", label: "Employee" },
+    { key: "name", label: "Members" },
     { key: "department", label: "Department" },
     { key: "email", label: "Email" },
     {
@@ -53,22 +53,22 @@ export const AdminEmployeesPage = () => {
       <Card>
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
-            <h2 className="section-title">Employees</h2>
+            <h2 className="section-title">Team members</h2>
             <p className="section-copy">
-              Keep employee records separate from ticket management for a
-              cleaner admin workflow.
+              Create employee and team leader accounts separately from ticket
+              management for a cleaner admin workflow.
             </p>
           </div>
           <Button onClick={() => setEmployeeModalOpen(true)}>
-            Create employee
+            Create team member
           </Button>
         </div>
         <Table columns={employeeColumns} rows={employees} />
       </Card>
 
       <Modal
-        title="Create Employee"
-        description="Add a team member profile with a role and department assignment. The admin account is fixed separately."
+        title="Create Team Member"
+        description="Add an employee or team leader profile. Login credentials will be emailed automatically after creation, and the admin account is fixed separately."
         isOpen={employeeModalOpen}
         onClose={() => setEmployeeModalOpen(false)}
       >
@@ -105,7 +105,7 @@ export const AdminEmployeesPage = () => {
                 setEmployeeModalOpen(false);
               })
               .catch((error) => {
-                setSubmitError(error.message || "Unable to create employee");
+                setSubmitError(error.message || "Unable to create team member");
               })
               .finally(() => {
                 setIsUploadingImage(false);
@@ -210,7 +210,7 @@ export const AdminEmployeesPage = () => {
                 ? "Uploading image..."
                 : isSubmitting
                   ? "Saving..."
-                  : "Save employee"}
+                  : "Save team member"}
             </Button>
           </div>
         </form>

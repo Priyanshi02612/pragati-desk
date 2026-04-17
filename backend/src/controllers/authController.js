@@ -6,6 +6,7 @@ const {
   ensureFixedAdminUser,
   getFixedAdminConfig,
 } = require("../utils/adminAccount");
+const { sendUserCredentialsEmail } = require("../utils/mailer");
 
 const buildAuthResponse = (user) => {
   const token = jwt.sign(
@@ -70,6 +71,23 @@ const register = async (req, res) => {
       performance,
       avatar,
     });
+
+    try {
+      await sendUserCredentialsEmail({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        password,
+      });
+    } catch (mailError) {
+      await User.findByIdAndDelete(user._id);
+
+      return res.status(500).json({
+        message:
+          mailError.message ||
+          "Credentials email could not be delivered, so the account was rolled back",
+      });
+    }
 
     return res.status(201).json({
       message: "User registered successfully",
