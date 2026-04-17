@@ -29,7 +29,8 @@ const roleConfig = {
     { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],
   Employee: [
-    { label: "My Tasks", to: "/employee", icon: UserSquare2, end: true },
+    { label: "Overview", to: "/employee", icon: UserSquare2, end: true },
+    { label: "My Tasks", to: "/employee/tasks", icon: ListTodo },
     { label: "Performance", to: "/performance", icon: BarChart3 },
     { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],

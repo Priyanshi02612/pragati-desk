@@ -45,7 +45,7 @@ export const TaskCard = ({ task, assignee, ticket, onUpdate, onDelay }) => {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-secondary">
-            {task.ticketId}
+            {task.taskNumber || task.id}
           </p>
           <h3 className="mt-2 text-lg font-semibold text-brand-text">
             {task.title}
@@ -57,6 +57,9 @@ export const TaskCard = ({ task, assignee, ticket, onUpdate, onDelay }) => {
               </p>
               <p className="mt-1 text-sm font-medium text-brand-text">
                 {ticket.title}
+              </p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-secondary">
+                {ticket.ticketNumber || ticket.id}
               </p>
               <div className="mt-2">
                 <Badge tone="bg-amber-50 text-amber-700">

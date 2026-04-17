@@ -7,6 +7,7 @@ import { AdminDashboardPage } from "../pages/AdminDashboardPage";
 import { AdminEmployeesPage } from "../pages/AdminEmployeesPage";
 import { AdminTicketsPage } from "../pages/AdminTicketsPage";
 import { EmployeeDashboardPage } from "../pages/EmployeeDashboardPage";
+import { EmployeeTasksPage } from "../pages/EmployeeTasksPage";
 import { LeaderboardPage } from "../pages/LeaderboardPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PerformancePage } from "../pages/PerformancePage";
@@ -135,6 +136,17 @@ function App() {
                 allowedRoles={["Employee"]}
               >
                 <EmployeeDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/tasks"
+            element={
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Employee"]}
+              >
+                <EmployeeTasksPage />
               </ProtectedRoute>
             }
           />
