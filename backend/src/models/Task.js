@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema(
   {
+    taskNumber: {
+      type: String,
+      trim: true,
+    },
     ticketId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Ticket",

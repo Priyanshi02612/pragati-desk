@@ -1,6 +1,7 @@
 const express = require("express");
 const authRoutes = require("./authRoutes");
 const adminRoutes = require("./adminRoutes");
+const leaderRoutes = require("./leaderRoutes");
 const notificationRoutes = require("./notificationRoutes");
 const ticketRoutes = require("./ticketRoutes");
 
@@ -12,6 +13,7 @@ router.get("/", (_req, res) => {
 
 router.use("/auth", authRoutes);
 router.use("/admin", adminRoutes);
+router.use("/leader", leaderRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/tickets", ticketRoutes);
 

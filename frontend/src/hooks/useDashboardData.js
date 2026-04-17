@@ -5,6 +5,7 @@ import {
   getAdminUsers,
   getTickets,
 } from "../services/adminApi";
+import { createLeaderTask, getTasks } from "../services/taskApi";
 import {
   getMyNotifications,
   markNotificationAsRead,
@@ -88,6 +89,27 @@ const normalizeNotification = (notification) => {
       typeof notification.targetUserId === "object"
         ? notification.targetUserId?._id || notification.targetUserId?.id
         : notification.targetUserId || null,
+  };
+};
+
+const normalizeTask = (task) => {
+  if (!task) {
+    return null;
+  }
+
+  return {
+    ...task,
+    id: task.id || task._id,
+    taskNumber: task.taskNumber || "",
+    ticketId:
+      typeof task.ticketId === "object"
+        ? task.ticketId?._id || task.ticketId?.id
+        : task.ticketId,
+    assigneeId:
+      typeof task.assigneeId === "object"
+        ? task.assigneeId?._id || task.assigneeId?.id
+        : task.assigneeId,
+    dueDate: task.dueDate ? task.dueDate.toString().split("T")[0] : "",
   };
 };
 
@@ -181,7 +203,7 @@ export const useDashboardData = () => {
   useEffect(() => {
     const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
 
-    if (!token || currentUser?.role !== "Admin") {
+    if (!token || !currentUser || !["Admin", "Team Leader"].includes(currentUser.role)) {
       return;
     }
 
@@ -229,6 +251,35 @@ export const useDashboardData = () => {
       })
       .catch(() => {
         // Keep the current local tickets state if the fetch fails.
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUser]);
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (!token || !currentUser) {
+      return;
+    }
+
+    let isMounted = true;
+
+    getTasks()
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setData((current) => ({
+          ...current,
+          tasks: (response.tasks || []).map(normalizeTask).filter(Boolean),
+        }));
+      })
+      .catch(() => {
+        // Keep the current local tasks state if the fetch fails.
       });
 
     return () => {
@@ -394,14 +445,9 @@ export const useDashboardData = () => {
     return ticket;
   };
 
-  const createTask = (payload) => {
-    const task = {
-      id: `TSK-${Math.floor(Math.random() * 900 + 100)}`,
-      status: "Pending",
-      timeSpent: 0,
-      delayReason: "",
-      ...payload,
-    };
+  const createTask = async (payload) => {
+    const response = await createLeaderTask(payload);
+    const task = normalizeTask(response.task);
 
     setData((current) => ({
       ...current,
@@ -410,14 +456,17 @@ export const useDashboardData = () => {
         {
           id: `NTF-${Date.now()}`,
           title: "New task assigned",
-          message: `${task.title} was assigned to ${current.users.find((user) => user.id === task.assigneeId)?.name}.`,
+          message: `${task.title} was assigned to ${current.users.find((user) => user.id === task.assigneeId)?.name || "the selected employee"}.`,
           type: "assignment",
           read: false,
           role: "Employee",
+          targetUserId: task.assigneeId,
         },
         ...current.notifications,
       ],
     }));
+
+    return task;
   };
 
   const updateTask = (taskId, updates) => {

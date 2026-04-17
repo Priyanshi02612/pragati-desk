@@ -58,8 +58,11 @@ export const TeamLeaderTasksPage = () => {
   ]);
 
   const taskColumns = [
-    { key: "title", label: "Task" },
-    { key: "ticketId", label: "Ticket" },
+    {
+      key: "taskNumber",
+      label: "Task Number",
+      render: (row) => `${row.taskNumber} • ${row.title}` || "Pending",
+    },
     {
       key: "ticketType",
       label: "Type",
@@ -89,17 +92,21 @@ export const TeamLeaderTasksPage = () => {
     {
       key: "taskId",
       label: "Task",
-      render: (row) => tasks.find((task) => task.id === row.taskId)?.title || row.taskId,
+      render: (row) =>
+        tasks.find((task) => task.id === row.taskId)?.title || row.taskId,
     },
     {
       key: "employeeId",
       label: "Employee",
-      render: (row) => users.find((user) => user.id === row.employeeId)?.name || "Unknown",
+      render: (row) =>
+        users.find((user) => user.id === row.employeeId)?.name || "Unknown",
     },
     {
       key: "reason",
       label: "Reason",
-      render: (row) => <span className="max-w-md text-brand-muted">{row.reason}</span>,
+      render: (row) => (
+        <span className="max-w-md text-brand-muted">{row.reason}</span>
+      ),
     },
     {
       key: "status",
@@ -112,8 +119,13 @@ export const TeamLeaderTasksPage = () => {
       render: (row) =>
         row.status === "Pending" ? (
           <div className="flex gap-2">
-            <Button onClick={() => reviewDelayRequest(row.id, "Approved")}>Approve</Button>
-            <Button variant="danger" onClick={() => reviewDelayRequest(row.id, "Rejected")}>
+            <Button onClick={() => reviewDelayRequest(row.id, "Approved")}>
+              Approve
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => reviewDelayRequest(row.id, "Rejected")}
+            >
               Reject
             </Button>
           </div>
@@ -135,9 +147,9 @@ export const TeamLeaderTasksPage = () => {
           </div>
           <form
             className="space-y-4"
-            onSubmit={(event) => {
+            onSubmit={async (event) => {
               event.preventDefault();
-              createTask(taskForm);
+              await createTask(taskForm);
               setTaskForm({
                 ticketId: assignedTickets[0]?.id || "",
                 title: "",
@@ -226,7 +238,9 @@ export const TeamLeaderTasksPage = () => {
       <Card>
         <div className="mb-5">
           <h2 className="section-title">Delay Approval Panel</h2>
-          <p className="section-copy">Review the full delay approval list for your team.</p>
+          <p className="section-copy">
+            Review the full delay approval list for your team.
+          </p>
         </div>
         {teamDelayRequests.length ? (
           <Table columns={delayColumns} rows={teamDelayRequests} />

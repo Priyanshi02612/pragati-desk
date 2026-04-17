@@ -46,7 +46,13 @@ const getTeamLeaders = async (_req, res) => {
 
 const getTeamMembers = async (_req, res) => {
   try {
-    const users = await User.find({ role: { $ne: "Admin" } })
+    const query = { role: { $ne: "Admin" } };
+
+    if (normalizeRole(_req.user.role) === "Team Leader") {
+      query.role = "Employee";
+    }
+
+    const users = await User.find(query)
       .select("_id name email department avatar role performance createdAt")
       .sort({ createdAt: -1, _id: -1 });
 
@@ -104,7 +110,9 @@ const createTicket = async (req, res) => {
     const assignedLeader = await User.findById(assignedLeaderId).select("role");
 
     if (!assignedLeader) {
-      return res.status(404).json({ message: "Assigned team leader not found" });
+      return res
+        .status(404)
+        .json({ message: "Assigned team leader not found" });
     }
 
     if (normalizeRole(assignedLeader.role) !== "Team Leader") {
