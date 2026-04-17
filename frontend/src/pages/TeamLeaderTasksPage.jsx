@@ -32,8 +32,8 @@ export const TeamLeaderTasksPage = () => {
   const teamTasks = tasks.filter((task) =>
     assignedTickets.some((ticket) => ticket.id === task.ticketId),
   );
-  const pendingApprovals = delayRequests.filter(
-    (request) => request.status === "Pending",
+  const teamDelayRequests = delayRequests.filter((request) =>
+    teamTasks.some((task) => task.id === request.taskId),
   );
 
   useEffect(() => {
@@ -83,6 +83,43 @@ export const TeamLeaderTasksPage = () => {
       key: "status",
       label: "Status",
       render: (row) => <Badge>{row.status}</Badge>,
+    },
+  ];
+  const delayColumns = [
+    {
+      key: "taskId",
+      label: "Task",
+      render: (row) => tasks.find((task) => task.id === row.taskId)?.title || row.taskId,
+    },
+    {
+      key: "employeeId",
+      label: "Employee",
+      render: (row) => users.find((user) => user.id === row.employeeId)?.name || "Unknown",
+    },
+    {
+      key: "reason",
+      label: "Reason",
+      render: (row) => <span className="max-w-md text-brand-muted">{row.reason}</span>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (row) => <Badge>{row.status}</Badge>,
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (row) =>
+        row.status === "Pending" ? (
+          <div className="flex gap-2">
+            <Button onClick={() => reviewDelayRequest(row.id, "Approved")}>Approve</Button>
+            <Button variant="danger" onClick={() => reviewDelayRequest(row.id, "Rejected")}>
+              Reject
+            </Button>
+          </div>
+        ) : (
+          <span className="text-sm text-brand-muted">Reviewed</span>
+        ),
     },
   ];
 
@@ -189,59 +226,15 @@ export const TeamLeaderTasksPage = () => {
       <Card>
         <div className="mb-5">
           <h2 className="section-title">Delay Approval Panel</h2>
-          <p className="section-copy">
-            Approve or reject requests that block delivery dates.
-          </p>
+          <p className="section-copy">Review the full delay approval list for your team.</p>
         </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          {pendingApprovals.length ? (
-            pendingApprovals.map((request) => {
-              const task = tasks.find((item) => item.id === request.taskId);
-              const employee = users.find(
-                (user) => user.id === request.employeeId,
-              );
-
-              return (
-                <div
-                  key={request.id}
-                  className="rounded-3xl border border-brand-border/70 bg-slate-50 p-5"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-brand-text">
-                        {task?.title}
-                      </h3>
-                      <p className="mt-1 text-sm text-brand-muted">
-                        Requested by {employee?.name} • {task?.ticketId}
-                      </p>
-                    </div>
-                    <Badge>{request.status}</Badge>
-                  </div>
-                  <p className="mt-4 rounded-2xl bg-white p-4 text-sm leading-6 text-brand-muted">
-                    {request.reason}
-                  </p>
-                  <div className="mt-4 flex gap-3">
-                    <Button
-                      onClick={() => reviewDelayRequest(request.id, "Approved")}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="danger"
-                      onClick={() => reviewDelayRequest(request.id, "Rejected")}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="rounded-3xl bg-slate-50 p-6 text-sm text-brand-muted">
-              No pending delay approvals right now.
-            </div>
-          )}
-        </div>
+        {teamDelayRequests.length ? (
+          <Table columns={delayColumns} rows={teamDelayRequests} />
+        ) : (
+          <div className="rounded-3xl bg-slate-50 p-6 text-sm text-brand-muted">
+            No delay approval requests for your team right now.
+          </div>
+        )}
       </Card>
     </div>
   );

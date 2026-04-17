@@ -7,7 +7,7 @@ import { Card } from "../components/ui/Card";
 import { formatNumber, formatPercent } from "../utils/format";
 
 export const AdminDashboardPage = () => {
-  const { metrics, tickets, users } = useAppContext();
+  const { metrics, tickets, users, currentUser } = useAppContext();
   const recentEmployees = users
     .filter((user) => user.role === "Employee")
     .slice(0, 3);
@@ -15,6 +15,30 @@ export const AdminDashboardPage = () => {
 
   return (
     <div className="space-y-6">
+      <div className="mb-6 rounded-3xl border border-white/80 bg-gradient-to-r from-brand-primary to-brand-secondary p-6 text-white shadow-soft">
+        <p className="text-sm font-medium text-white/80">Welcome back</p>
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold">{currentUser.name}</h2>
+            <p className="mt-1 text-sm text-white/80">
+              {currentUser.role} dashboard with live task, performance, and team
+              visibility.
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm">
+            <span className="block text-white/70">Today</span>
+            <span className="font-semibold">
+              {new Intl.DateTimeFormat("en-IN", {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              }).format(new Date())}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon={Users2}
