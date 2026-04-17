@@ -5,16 +5,23 @@ import { Card } from "../components/ui/Card";
 import { InputField } from "../components/ui/InputField";
 import { Modal } from "../components/ui/Modal";
 import { Table } from "../components/ui/Table";
+import { uploadImageToCloudinary } from "../services/cloudinaryApi";
 import { formatPercent } from "../utils/format";
 
 export const AdminEmployeesPage = () => {
   const { createEmployee, users } = useAppContext();
   const [employeeModalOpen, setEmployeeModalOpen] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [employeeForm, setEmployeeForm] = useState({
     name: "",
     email: "",
+    password: "",
     role: "Employee",
     department: "",
+    avatarFile: null,
+    avatar: "",
   });
 
   const employees = useMemo(
@@ -61,7 +68,7 @@ export const AdminEmployeesPage = () => {
 
       <Modal
         title="Create Employee"
-        description="Add a new employee profile with a role and department assignment."
+        description="Add a team member profile with a role and department assignment. The admin account is fixed separately."
         isOpen={employeeModalOpen}
         onClose={() => setEmployeeModalOpen(false)}
       >
@@ -69,14 +76,41 @@ export const AdminEmployeesPage = () => {
           className="space-y-4"
           onSubmit={(event) => {
             event.preventDefault();
-            createEmployee(employeeForm);
-            setEmployeeForm({
-              name: "",
-              email: "",
-              role: "Employee",
-              department: "",
-            });
-            setEmployeeModalOpen(false);
+            setSubmitError("");
+            setIsSubmitting(true);
+            Promise.resolve()
+              .then(async () => {
+                let avatar = employeeForm.avatar;
+
+                if (employeeForm.avatarFile) {
+                  setIsUploadingImage(true);
+                  avatar = await uploadImageToCloudinary(employeeForm.avatarFile);
+                }
+
+                return createEmployee({
+                  ...employeeForm,
+                  avatar,
+                });
+              })
+              .then(() => {
+                setEmployeeForm({
+                  name: "",
+                  email: "",
+                  password: "",
+                  role: "Employee",
+                  department: "",
+                  avatarFile: null,
+                  avatar: "",
+                });
+                setEmployeeModalOpen(false);
+              })
+              .catch((error) => {
+                setSubmitError(error.message || "Unable to create employee");
+              })
+              .finally(() => {
+                setIsUploadingImage(false);
+                setIsSubmitting(false);
+              });
           }}
         >
           <InputField
@@ -100,13 +134,23 @@ export const AdminEmployeesPage = () => {
             }
           />
           <InputField
+            label="Password"
+            type="password"
+            value={employeeForm.password}
+            onChange={(event) =>
+              setEmployeeForm((current) => ({
+                ...current,
+                password: event.target.value,
+              }))
+            }
+          />
+          <InputField
             label="Role"
             as="select"
             value={employeeForm.role}
             options={[
               { value: "Employee", label: "Employee" },
               { value: "Team Leader", label: "Team Leader" },
-              { value: "Admin", label: "Admin" },
             ]}
             onChange={(event) =>
               setEmployeeForm((current) => ({
@@ -125,6 +169,27 @@ export const AdminEmployeesPage = () => {
               }))
             }
           />
+          <InputField
+            label="Avatar"
+            type="file"
+            accept="image/*"
+            onChange={(event) =>
+              setEmployeeForm((current) => ({
+                ...current,
+                avatarFile: event.target.files?.[0] || null,
+              }))
+            }
+          />
+          {employeeForm.avatarFile ? (
+            <p className="text-sm text-brand-muted">
+              Selected image: {employeeForm.avatarFile.name}
+            </p>
+          ) : null}
+          {submitError ? (
+            <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-brand-danger">
+              {submitError}
+            </div>
+          ) : null}
           <div className="flex justify-end gap-3">
             <Button variant="muted" onClick={() => setEmployeeModalOpen(false)}>
               Cancel
@@ -132,13 +197,20 @@ export const AdminEmployeesPage = () => {
             <Button
               type="submit"
               disabled={
+                isSubmitting ||
+                isUploadingImage ||
                 !employeeForm.name.trim() ||
                 !employeeForm.email.trim() ||
+                !employeeForm.password.trim() ||
                 !employeeForm.department.trim()
               }
               className="disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Save employee
+              {isUploadingImage
+                ? "Uploading image..."
+                : isSubmitting
+                  ? "Saving..."
+                  : "Save employee"}
             </Button>
           </div>
         </form>

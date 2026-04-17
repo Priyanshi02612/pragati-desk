@@ -1,14 +1,93 @@
 import { useEffect, useMemo, useState } from "react";
-import { getInitialState, loginAsRole } from "../services/mockApi";
+import { getCurrentUser, loginUser, registerUser } from "../services/authApi";
+import { TOKEN_STORAGE_KEY } from "../services/api";
+import { getInitialState } from "../services/mockApi";
+import { toRoleLabel } from "../utils/roles";
 
 const STORAGE_KEY = "pragatidesk-session";
+const initialData = getInitialState();
+
+const normalizeAuthUser = (user) => {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    ...user,
+    id: user.id || user._id,
+    role: toRoleLabel(user.role),
+  };
+};
+
+const attachDashboardProfile = (user, users) => {
+  if (!user) {
+    return null;
+  }
+
+  const profileMatch = users.find((item) => item.role === user.role);
+
+  if (!profileMatch) {
+    return user;
+  }
+
+  return {
+    ...profileMatch,
+    ...user,
+    id: profileMatch.id,
+    authId: user.id,
+    avatar: user.avatar || profileMatch.avatar,
+  };
+};
 
 export const useDashboardData = () => {
-  const [data, setData] = useState(getInitialState);
+  const [data, setData] = useState(initialData);
   const [currentUser, setCurrentUser] = useState(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : null;
   });
+  const [isSessionReady, setIsSessionReady] = useState(false);
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (!token) {
+      setIsSessionReady(true);
+      return;
+    }
+
+    let isMounted = true;
+
+    getCurrentUser()
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const nextUser = attachDashboardProfile(
+          normalizeAuthUser(response.user),
+          initialData.users,
+        );
+        setCurrentUser(nextUser);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+        window.localStorage.removeItem(STORAGE_KEY);
+        setCurrentUser(null);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsSessionReady(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -42,25 +121,31 @@ export const useDashboardData = () => {
     };
   }, [data]);
 
-  const login = (role) => {
-    const user = loginAsRole(role);
-    setCurrentUser(user);
-    return user;
+  const login = async (credentials) => {
+    const response = await loginUser(credentials);
+    const nextUser = attachDashboardProfile(
+      normalizeAuthUser(response.user),
+      data.users,
+    );
+
+    window.localStorage.setItem(TOKEN_STORAGE_KEY, response.token);
+    setCurrentUser(nextUser);
+    return nextUser;
   };
 
-  const logout = () => setCurrentUser(null);
+  const logout = () => {
+    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    setCurrentUser(null);
+  };
 
-  const createEmployee = (payload) => {
+  const createEmployee = async (payload) => {
+    const response = await registerUser(payload);
+    const user = normalizeAuthUser(response.user);
     const employee = {
-      id: `employee-${Date.now()}`,
-      avatar: payload.name
-        .split(" ")
-        .map((part) => part[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase(),
-      performance: 90,
-      ...payload,
+      id: response.user.id,
+      authId: response.user.id,
+      performance: user.performance ?? 90,
+      ...user,
     };
 
     setData((current) => ({
@@ -78,6 +163,8 @@ export const useDashboardData = () => {
         ...current.notifications,
       ],
     }));
+
+    return employee;
   };
 
   const createTicket = (payload) => {
@@ -204,6 +291,7 @@ export const useDashboardData = () => {
   return {
     ...data,
     currentUser,
+    isSessionReady,
     metrics,
     login,
     logout,

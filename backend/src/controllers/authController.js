@@ -1,6 +1,11 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { normalizeRole, serializeRole } = require("../utils/roles");
+const bcrypt = require("bcryptjs");
+const {
+  ensureFixedAdminUser,
+  getFixedAdminConfig,
+} = require("../utils/adminAccount");
 
 const buildAuthResponse = (user) => {
   const token = jwt.sign(
@@ -9,7 +14,7 @@ const buildAuthResponse = (user) => {
       role: serializeRole(user.role),
     },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
 
   return {
@@ -28,10 +33,15 @@ const buildAuthResponse = (user) => {
 
 const register = async (req, res) => {
   try {
-    const { name, email, password, role, department, performance, avatar } = req.body;
+    const { name, email, password, role, department, performance, avatar } =
+      req.body;
 
     if (!name || !email || !password || !department) {
-      return res.status(400).json({ message: "Name, email, password, and department are required" });
+      return res
+        .status(400)
+        .json({
+          message: "Name, email, password, and department are required",
+        });
     }
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -41,10 +51,20 @@ const register = async (req, res) => {
 
     const normalizedRole = normalizeRole(role) || "Employee";
 
+    if (normalizedRole === "Admin") {
+      return res.status(403).json({
+        message:
+          "Admin account uses fixed credentials and cannot be created here",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const user = await User.create({
       name,
       email,
-      password,
+      password: hashedPassword,
       role: normalizedRole,
       department,
       performance,
@@ -56,7 +76,9 @@ const register = async (req, res) => {
       ...buildAuthResponse(user),
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message || "Registration failed" });
+    return res
+      .status(500)
+      .json({ message: error.message || "Registration failed" });
   }
 };
 
@@ -65,16 +87,35 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase();
+    const fixedAdmin = getFixedAdminConfig();
+
+    if (normalizedEmail === fixedAdmin.email) {
+      const adminUser = await ensureFixedAdminUser();
+      const isMatch = await bcrypt.compare(password, adminUser.password);
+
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      return res.status(200).json({
+        message: "Login successful",
+        ...buildAuthResponse(adminUser),
+      });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 

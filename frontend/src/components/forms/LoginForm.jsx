@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { ArrowRight, BriefcaseBusiness } from "lucide-react";
-import { roles } from "../../data/mockData";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { InputField } from "../ui/InputField";
 
-export const LoginForm = ({ onLogin }) => {
+export const LoginForm = ({ onLogin, error, isSubmitting }) => {
   const [form, setForm] = useState({
     email: "",
     password: "",
-    role: "Admin",
   });
   const [errors, setErrors] = useState({});
 
@@ -24,10 +22,6 @@ export const LoginForm = ({ onLogin }) => {
       nextErrors.password = "Password is required.";
     }
 
-    if (!form.role) {
-      nextErrors.role = "Please select a role.";
-    }
-
     setErrors(nextErrors);
     return !Object.keys(nextErrors).length;
   };
@@ -39,7 +33,7 @@ export const LoginForm = ({ onLogin }) => {
       return;
     }
 
-    onLogin(form.role);
+    onLogin(form);
   };
 
   return (
@@ -85,7 +79,7 @@ export const LoginForm = ({ onLogin }) => {
               Welcome back
             </h2>
             <p className="mt-2 text-sm text-brand-muted">
-              Sign in with a role to preview the full PragatiDesk experience.
+              Sign in with your registered work email and password.
             </p>
           </div>
 
@@ -115,26 +109,26 @@ export const LoginForm = ({ onLogin }) => {
                 }))
               }
             />
-            <InputField
-              label="Login as"
-              as="select"
-              value={form.role}
-              error={errors.role}
-              options={roles.map((role) => ({ value: role, label: role }))}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, role: event.target.value }))
-              }
-            />
+            {error ? (
+              <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-brand-danger">
+                {error}
+              </div>
+            ) : null}
 
-            <Button className="w-full justify-between px-5 py-3" type="submit">
-              Continue to dashboard
+            <Button
+              className="w-full justify-between px-5 py-3"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Signing in..." : "Continue to dashboard"}
               <ArrowRight size={18} />
             </Button>
           </form>
 
           <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-brand-muted">
-            Demo access works with any email/password pair. Role selection
-            controls the dashboard view.
+            Use an account that exists in your backend database. The dashboard
+            view is selected automatically from your account role. The admin
+            login is reserved for the single fixed administrator account.
           </div>
         </Card>
       </section>

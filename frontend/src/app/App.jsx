@@ -50,7 +50,7 @@ const HomeRedirect = ({ currentUser }) => {
 function App() {
   const state = useDashboardData();
 
-  if (!state) {
+  if (!state || !state.isSessionReady) {
     return <Loader />;
   }
 
