@@ -1,57 +1,40 @@
-import { CheckCircle2, ClipboardList, Clock9, Layers3 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { CheckCircle2, ClipboardList, Clock9, Layers3, Ticket } from 'lucide-react';
+import { useMemo } from 'react';
 import { useAppContext } from '../app/AppContext';
 import { StatCard } from '../components/dashboard/StatCard';
 import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { InputField } from '../components/ui/InputField';
 import { Table } from '../components/ui/Table';
 import { formatNumber } from '../utils/format';
 
 export const TeamLeaderDashboardPage = () => {
-  const { createTask, currentUser, delayRequests, reviewDelayRequest, tasks, tickets, users } =
-    useAppContext();
-  const [taskForm, setTaskForm] = useState({
-    ticketId: '',
-    title: '',
-    assigneeId: '',
-    dueDate: '2026-04-18',
-  });
+  const { currentUser, delayRequests, tasks, tickets, users } = useAppContext();
 
   const assignedTickets = useMemo(
     () => tickets.filter((ticket) => ticket.assignedLeaderId === currentUser.id),
     [currentUser.id, tickets],
   );
-  const employeeOptions = users.filter((user) => user.role === 'Employee');
   const teamTasks = tasks.filter((task) =>
     assignedTickets.some((ticket) => ticket.id === task.ticketId),
   );
   const pendingApprovals = delayRequests.filter((request) => request.status === 'Pending');
-
-  useEffect(() => {
-    if (!taskForm.ticketId && assignedTickets[0]?.id) {
-      setTaskForm((current) => ({ ...current, ticketId: assignedTickets[0].id }));
-    }
-
-    if (!taskForm.assigneeId && employeeOptions[0]?.id) {
-      setTaskForm((current) => ({ ...current, assigneeId: employeeOptions[0].id }));
-    }
-  }, [assignedTickets, employeeOptions, taskForm.assigneeId, taskForm.ticketId]);
-
-  const taskColumns = [
-    { key: 'title', label: 'Task' },
-    { key: 'ticketId', label: 'Ticket' },
+  const assignedTicketRows = assignedTickets.map((ticket) => ({
+    ...ticket,
+    taskCount: teamTasks.filter((task) => task.ticketId === ticket.id).length,
+  }));
+  const ticketColumns = [
+    { key: 'id', label: 'Ticket ID' },
+    { key: 'title', label: 'Title' },
     {
-      key: 'assigneeId',
-      label: 'Assigned To',
-      render: (row) => users.find((user) => user.id === row.assigneeId)?.name || 'Unknown',
+      key: 'description',
+      label: 'Description',
+      render: (row) => <span className="max-w-md text-brand-muted">{row.description}</span>,
     },
-    { key: 'dueDate', label: 'Due Date' },
+    { key: 'department', label: 'Department' },
     {
-      key: 'status',
-      label: 'Status',
-      render: (row) => <Badge>{row.status}</Badge>,
+      key: 'taskCount',
+      label: 'Tasks',
+      render: (row) => <span className="font-medium text-brand-text">{row.taskCount}</span>,
     },
   ];
 
@@ -87,85 +70,51 @@ export const TeamLeaderDashboardPage = () => {
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
           <div className="mb-5">
-            <h2 className="section-title">Create and Assign Tasks</h2>
-            <p className="section-copy">Break tickets into actionable tasks for employees.</p>
+            <h2 className="section-title">Assigned Tickets</h2>
+            <p className="section-copy">Track the tickets currently owned by your team.</p>
           </div>
-          <form
-            className="space-y-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              createTask(taskForm);
-              setTaskForm({
-                ticketId: assignedTickets[0]?.id || '',
-                title: '',
-                assigneeId: employeeOptions[0]?.id || '',
-                dueDate: '2026-04-18',
-              });
-            }}
-          >
-            <InputField
-              label="Ticket"
-              as="select"
-              value={taskForm.ticketId}
-              options={assignedTickets.map((ticket) => ({ value: ticket.id, label: ticket.title }))}
-              onChange={(event) =>
-                setTaskForm((current) => ({ ...current, ticketId: event.target.value }))
-              }
-            />
-            <InputField
-              label="Task title"
-              value={taskForm.title}
-              placeholder="Describe the next action"
-              onChange={(event) =>
-                setTaskForm((current) => ({ ...current, title: event.target.value }))
-              }
-            />
-            <InputField
-              label="Assign to employee"
-              as="select"
-              value={taskForm.assigneeId}
-              options={employeeOptions.map((employee) => ({
-                value: employee.id,
-                label: employee.name,
-              }))}
-              onChange={(event) =>
-                setTaskForm((current) => ({ ...current, assigneeId: event.target.value }))
-              }
-            />
-            <InputField
-              label="Due date"
-              type="date"
-              value={taskForm.dueDate}
-              onChange={(event) =>
-                setTaskForm((current) => ({ ...current, dueDate: event.target.value }))
-              }
-            />
-            <Button
-              className="w-full disabled:cursor-not-allowed disabled:opacity-60"
-              type="submit"
-              disabled={!taskForm.ticketId || !taskForm.title.trim() || !taskForm.assigneeId}
-            >
-              Assign task
-            </Button>
-          </form>
+          <Table columns={ticketColumns} rows={assignedTicketRows} />
         </Card>
 
         <Card>
-          <div className="mb-5">
-            <h2 className="section-title">Tasks Overview</h2>
-            <p className="section-copy">Track progress across all tasks in your queue.</p>
+          <div className="mb-5 flex items-start gap-3">
+            <div className="rounded-2xl bg-blue-50 p-3 text-brand-secondary">
+              <Ticket size={20} />
+            </div>
+            <div>
+              <h2 className="section-title">Overview Notes</h2>
+              <p className="section-copy">
+                Use the dedicated Tasks page to create assignments, update task distribution, and
+                review delay approvals without cluttering the overview screen.
+              </p>
+            </div>
           </div>
-          <Table columns={taskColumns} rows={teamTasks} />
+          <div className="space-y-4">
+            {assignedTickets.map((ticket) => (
+              <div key={ticket.id} className="rounded-3xl bg-slate-50 p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
+                      {ticket.id}
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-brand-text">{ticket.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-brand-muted">{ticket.description}</p>
+                  </div>
+                  <Badge tone="bg-blue-50 text-brand-secondary">{ticket.priority}</Badge>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
 
       <Card>
         <div className="mb-5">
-          <h2 className="section-title">Delay Approval Panel</h2>
-          <p className="section-copy">Approve or reject requests that block delivery dates.</p>
+          <h2 className="section-title">Pending Delay Requests</h2>
+          <p className="section-copy">Quick overview of pending blockers across your team.</p>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           {pendingApprovals.length ? (
@@ -187,14 +136,6 @@ export const TeamLeaderDashboardPage = () => {
                   <p className="mt-4 rounded-2xl bg-white p-4 text-sm leading-6 text-brand-muted">
                     {request.reason}
                   </p>
-                  <div className="mt-4 flex gap-3">
-                    <Button onClick={() => reviewDelayRequest(request.id, 'Approved')}>
-                      Approve
-                    </Button>
-                    <Button variant="danger" onClick={() => reviewDelayRequest(request.id, 'Rejected')}>
-                      Reject
-                    </Button>
-                  </div>
                 </div>
               );
             })

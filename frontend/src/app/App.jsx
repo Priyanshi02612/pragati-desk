@@ -11,6 +11,7 @@ import { LeaderboardPage } from '../pages/LeaderboardPage';
 import { LoginPage } from '../pages/LoginPage';
 import { PerformancePage } from '../pages/PerformancePage';
 import { TeamLeaderDashboardPage } from '../pages/TeamLeaderDashboardPage';
+import { TeamLeaderTasksPage } from '../pages/TeamLeaderTasksPage';
 
 const ProtectedRoute = ({ children, allowedRoles, currentUser }) => {
   if (!currentUser) {
@@ -100,6 +101,14 @@ function App() {
             element={
               <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Team Leader']}>
                 <TeamLeaderDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/team-leader/tasks"
+            element={
+              <ProtectedRoute currentUser={state.currentUser} allowedRoles={['Team Leader']}>
+                <TeamLeaderTasksPage />
               </ProtectedRoute>
             }
           />

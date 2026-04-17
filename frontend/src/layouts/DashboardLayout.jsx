@@ -10,7 +10,7 @@ export const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen bg-glow px-4 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto grid min-h-[calc(100vh-2rem)] max-w-7xl gap-6 lg:grid-cols-[280px_1fr]">
+      <div className="mx-auto grid min-h-[calc(100vh-2rem)] gap-6 lg:grid-cols-[280px_1fr]">
         <div className={`${menuOpen ? 'block' : 'hidden'} lg:block`}>
           <Sidebar />
         </div>

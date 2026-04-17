@@ -14,20 +14,20 @@ import { useAppContext } from '../../app/AppContext';
 
 const roleConfig = {
   Admin: [
-    { label: 'Dashboard', to: '/admin', icon: LayoutDashboard },
+    { label: 'Dashboard', to: '/admin', icon: LayoutDashboard, end: true },
     { label: 'Employees', to: '/admin/employees', icon: Users },
     { label: 'Tickets', to: '/admin/tickets', icon: Ticket },
     { label: 'Performance', to: '/performance', icon: BarChart3 },
     { label: 'Leaderboard', to: '/leaderboard', icon: Crown },
   ],
   'Team Leader': [
-    { label: 'Overview', to: '/team-leader', icon: ShieldCheck },
-    { label: 'Tasks', to: '/team-leader', icon: ListTodo },
+    { label: 'Overview', to: '/team-leader', icon: ShieldCheck, end: true },
+    { label: 'Tasks', to: '/team-leader/tasks', icon: ListTodo },
     { label: 'Performance', to: '/performance', icon: BarChart3 },
     { label: 'Leaderboard', to: '/leaderboard', icon: Crown },
   ],
   Employee: [
-    { label: 'My Tasks', to: '/employee', icon: UserSquare2 },
+    { label: 'My Tasks', to: '/employee', icon: UserSquare2, end: true },
     { label: 'Performance', to: '/performance', icon: BarChart3 },
     { label: 'Leaderboard', to: '/leaderboard', icon: Crown },
   ],
@@ -55,6 +55,7 @@ export const Sidebar = () => {
           return (
             <NavLink
               key={link.label}
+              end={link.end}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
                   isActive
