@@ -32,7 +32,11 @@ export const TeamLeaderDashboardPage = () => {
     taskCount: teamTasks.filter((task) => task.ticketId === ticket.id).length,
   }));
   const ticketColumns = [
-    { key: "id", label: "Ticket ID" },
+    {
+      key: "ticketNumber",
+      label: "Ticket Number",
+      render: (row) => row.ticketNumber || row.id,
+    },
     { key: "title", label: "Title" },
     {
       key: "ticketType",
@@ -147,7 +151,7 @@ export const TeamLeaderDashboardPage = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
-                      {ticket.id}
+                      {ticket.ticketNumber || ticket.id}
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-brand-text">
                       {ticket.title}

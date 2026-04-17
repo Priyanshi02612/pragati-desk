@@ -39,7 +39,7 @@ const ensureFixedAdminUser = async () => {
     { email: config.email },
     { $set: updates },
     {
-      new: true,
+      returnDocument: "after",
       upsert: true,
       setDefaultsOnInsert: true,
       runValidators: true,

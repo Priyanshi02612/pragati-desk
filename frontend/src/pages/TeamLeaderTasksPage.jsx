@@ -152,7 +152,7 @@ export const TeamLeaderTasksPage = () => {
               value={taskForm.ticketId}
               options={assignedTickets.map((ticket) => ({
                 value: ticket.id,
-                label: `${ticket.ticketType} • ${ticket.title}`,
+                label: `${ticket.ticketNumber || ticket.id} • ${ticket.title}`,
               }))}
               onChange={(event) =>
                 setTaskForm((current) => ({

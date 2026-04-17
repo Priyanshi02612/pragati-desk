@@ -1,30 +1,90 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppContext } from "../app/AppContext";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { InputField } from "../components/ui/InputField";
 import { Table } from "../components/ui/Table";
-import { ticketTypes } from "../data/mockData";
+import {
+  DEFAULT_TICKET_PRIORITY,
+  DEFAULT_TICKET_TYPE,
+  TICKET_PRIORITIES,
+  TICKET_TYPES,
+} from "../constants/tickets";
+import { getAdminLeaders } from "../services/adminApi";
+
+const normalizeLeader = (leader) => ({
+  ...leader,
+  id: leader.id || leader._id,
+});
 
 export const AdminTicketsPage = () => {
   const { createTicket, tickets, users } = useAppContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [leaders, setLeaders] = useState([]);
+
   const [ticketForm, setTicketForm] = useState({
     title: "",
     description: "",
-    ticketType: "Task",
-    priority: "Medium",
+    ticketType: DEFAULT_TICKET_TYPE,
+    priority: DEFAULT_TICKET_PRIORITY,
     department: "Support",
-    assignedLeaderId: "leader-1",
+    assignedLeaderId: leaders[0]?.id || "",
   });
 
-  const leaders = useMemo(
-    () => users.filter((user) => user.role === "Team Leader"),
-    [users],
-  );
+  useEffect(() => {
+    let isMounted = true;
+
+    getAdminLeaders()
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setLeaders((response.leaders || []).map(normalizeLeader));
+      })
+      .catch((error) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setLeaders([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!leaders.length) {
+      return;
+    }
+
+    setTicketForm((current) => {
+      if (current.assignedLeaderId) {
+        return current;
+      }
+
+      return {
+        ...current,
+        assignedLeaderId: leaders[0].id,
+      };
+    });
+  }, [leaders]);
+
+  const leaderLookup = useMemo(() => {
+    const knownUsers = users.map((user) => [user.id, user.name]);
+    const fetchedLeaders = leaders.map((leader) => [leader.id, leader.name]);
+    return new Map([...knownUsers, ...fetchedLeaders]);
+  }, [leaders, users]);
 
   const ticketColumns = [
-    { key: "id", label: "Ticket ID" },
+    {
+      key: "ticketNumber",
+      label: "Ticket Number",
+      render: (row) => row.ticketNumber || row.id,
+    },
     { key: "title", label: "Title" },
     {
       key: "ticketType",
@@ -44,9 +104,7 @@ export const AdminTicketsPage = () => {
     {
       key: "assignedLeaderId",
       label: "Assigned Leader",
-      render: (row) =>
-        users.find((user) => user.id === row.assignedLeaderId)?.name ||
-        "Unknown",
+      render: (row) => leaderLookup.get(row.assignedLeaderId) || "Unknown",
     },
     {
       key: "priority",
@@ -56,6 +114,29 @@ export const AdminTicketsPage = () => {
       ),
     },
   ];
+
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    Promise.resolve()
+      .then(() => createTicket(ticketForm))
+      .then(() => {
+        setTicketForm({
+          title: "",
+          description: "",
+          ticketType: DEFAULT_TICKET_TYPE,
+          priority: DEFAULT_TICKET_PRIORITY,
+          department: "Support",
+          assignedLeaderId: leaders[0]?.id || "",
+        });
+      })
+      .catch((error) => {
+        console.log(error.message || "Unable to create ticket");
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
+  };
 
   return (
     <div className="space-y-6">
@@ -71,16 +152,7 @@ export const AdminTicketsPage = () => {
           <form
             className="space-y-4"
             onSubmit={(event) => {
-              event.preventDefault();
-              createTicket(ticketForm);
-              setTicketForm({
-                title: "",
-                description: "",
-                ticketType: "Task",
-                priority: "Medium",
-                department: "Support",
-                assignedLeaderId: leaders[0]?.id || "",
-              });
+              handleFormSubmit(event);
             }}
           >
             <InputField
@@ -112,7 +184,7 @@ export const AdminTicketsPage = () => {
                 label="Ticket type"
                 as="select"
                 value={ticketForm.ticketType}
-                options={ticketTypes.map((type) => ({
+                options={TICKET_TYPES.map((type) => ({
                   value: type,
                   label: type,
                 }))}
@@ -127,11 +199,10 @@ export const AdminTicketsPage = () => {
                 label="Priority"
                 as="select"
                 value={ticketForm.priority}
-                options={[
-                  { value: "High", label: "High" },
-                  { value: "Medium", label: "Medium" },
-                  { value: "Low", label: "Low" },
-                ]}
+                options={TICKET_PRIORITIES.map((priority) => ({
+                  value: priority,
+                  label: priority,
+                }))}
                 onChange={(event) =>
                   setTicketForm((current) => ({
                     ...current,
@@ -170,13 +241,14 @@ export const AdminTicketsPage = () => {
               type="submit"
               variant="secondary"
               disabled={
+                isSubmitting ||
                 !ticketForm.title.trim() ||
                 !ticketForm.description.trim() ||
                 !ticketForm.ticketType ||
                 !ticketForm.assignedLeaderId
               }
             >
-              Submit ticket
+              {isSubmitting ? "Submitting..." : "Submit ticket"}
             </Button>
           </form>
         </Card>

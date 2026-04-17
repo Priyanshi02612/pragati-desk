@@ -132,7 +132,7 @@ export const AdminDashboardPage = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
-                      {ticket.id}
+                      {ticket.ticketNumber || ticket.id}
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-brand-text">
                       {ticket.title}

@@ -1,11 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { getCurrentUser, loginUser, registerUser } from "../services/authApi";
+import { createAdminTicket } from "../services/adminApi";
 import { TOKEN_STORAGE_KEY } from "../services/api";
-import { getInitialState } from "../services/mockApi";
 import { toRoleLabel } from "../utils/roles";
+import { mockLeaderboard, mockPerformanceSeries } from "../data/mockData";
 
 const STORAGE_KEY = "pragatidesk-session";
-const initialData = getInitialState();
+const initialData = {
+  users: [],
+  tickets: [],
+  tasks: [],
+  notifications: [],
+  delayRequests: [],
+  performanceSeries: mockPerformanceSeries,
+  leaderboard: mockLeaderboard,
+};
 
 const normalizeAuthUser = (user) => {
   if (!user) {
@@ -36,6 +45,25 @@ const attachDashboardProfile = (user, users) => {
     id: profileMatch.id,
     authId: user.id,
     avatar: user.avatar || profileMatch.avatar,
+  };
+};
+
+const normalizeTicket = (ticket) => {
+  if (!ticket) {
+    return null;
+  }
+
+  return {
+    ...ticket,
+    id: ticket.id || ticket._id,
+    ticketNumber: ticket.ticketNumber || ticket.id || ticket._id,
+    assignedLeaderId:
+      typeof ticket.assignedLeaderId === "object"
+        ? ticket.assignedLeaderId?._id || ticket.assignedLeaderId?.id
+        : ticket.assignedLeaderId,
+    createdAt: ticket.createdAt
+      ? ticket.createdAt.toString().split("T")[0]
+      : undefined,
   };
 };
 
@@ -167,13 +195,9 @@ export const useDashboardData = () => {
     return employee;
   };
 
-  const createTicket = (payload) => {
-    const ticket = {
-      id: `TCK-${Math.floor(Math.random() * 900 + 100)}`,
-      status: "Open",
-      createdAt: new Date().toISOString().split("T")[0],
-      ...payload,
-    };
+  const createTicket = async (payload) => {
+    const response = await createAdminTicket(payload);
+    const ticket = normalizeTicket(response.ticket);
 
     setData((current) => ({
       ...current,
@@ -182,7 +206,7 @@ export const useDashboardData = () => {
         {
           id: `NTF-${Date.now()}`,
           title: "Ticket created",
-          message: `${ticket.id} assigned to a team leader.`,
+          message: `${ticket.ticketNumber} assigned to a team leader.`,
           type: "assignment",
           read: false,
           role: "Team Leader",
@@ -190,6 +214,8 @@ export const useDashboardData = () => {
         ...current.notifications,
       ],
     }));
+
+    return ticket;
   };
 
   const createTask = (payload) => {
