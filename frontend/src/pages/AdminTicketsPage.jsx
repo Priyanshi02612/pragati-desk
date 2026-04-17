@@ -5,6 +5,7 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { InputField } from "../components/ui/InputField";
 import { Table } from "../components/ui/Table";
+import { Avatar } from "../components/ui/Avatar";
 import {
   DEFAULT_TICKET_PRIORITY,
   DEFAULT_TICKET_TYPE,
@@ -74,8 +75,8 @@ export const AdminTicketsPage = () => {
   }, [leaders]);
 
   const leaderLookup = useMemo(() => {
-    const knownUsers = users.map((user) => [user.id, user.name]);
-    const fetchedLeaders = leaders.map((leader) => [leader.id, leader.name]);
+    const knownUsers = users.map((user) => [user.id, user]);
+    const fetchedLeaders = leaders.map((leader) => [leader.id, leader]);
     return new Map([...knownUsers, ...fetchedLeaders]);
   }, [leaders, users]);
 
@@ -104,7 +105,20 @@ export const AdminTicketsPage = () => {
     {
       key: "assignedLeaderId",
       label: "Assigned Leader",
-      render: (row) => leaderLookup.get(row.assignedLeaderId) || "Unknown",
+      render: (row) => {
+        const leader = leaderLookup.get(row.assignedLeaderId);
+
+        if (!leader) {
+          return "Unknown";
+        }
+
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar src={leader.avatar} name={leader.name} size="sm" />
+            <span>{leader.name}</span>
+          </div>
+        );
+      },
     },
     {
       key: "priority",
@@ -234,8 +248,27 @@ export const AdminTicketsPage = () => {
                   ...current,
                   assignedLeaderId: event.target.value,
                 }))
-              }
-            />
+                }
+              />
+            {ticketForm.assignedLeaderId ? (
+              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+                <Avatar
+                  src={leaderLookup.get(ticketForm.assignedLeaderId)?.avatar}
+                  name={leaderLookup.get(ticketForm.assignedLeaderId)?.name}
+                  size="sm"
+                />
+                <div>
+                  <p className="text-sm font-medium text-brand-text">
+                    {leaderLookup.get(ticketForm.assignedLeaderId)?.name ||
+                      "Selected leader"}
+                  </p>
+                  <p className="text-xs text-brand-muted">
+                    {leaderLookup.get(ticketForm.assignedLeaderId)?.department ||
+                      "Team Leader"}
+                  </p>
+                </div>
+              </div>
+            ) : null}
             <Button
               className="w-full disabled:cursor-not-allowed disabled:opacity-60"
               type="submit"

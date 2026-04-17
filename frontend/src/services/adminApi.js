@@ -1,5 +1,10 @@
 import { apiRequest } from "./api";
 
+export const getAdminUsers = () =>
+  apiRequest("/admin/users", {
+    method: "GET",
+  });
+
 export const getAdminLeaders = () =>
   apiRequest("/admin/leaders", {
     method: "GET",

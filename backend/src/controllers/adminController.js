@@ -43,6 +43,22 @@ const getTeamLeaders = async (_req, res) => {
   }
 };
 
+const getTeamMembers = async (_req, res) => {
+  try {
+    const users = await User.find({ role: { $ne: "Admin" } })
+      .select("_id name email department avatar role performance createdAt")
+      .sort({ createdAt: -1, _id: -1 });
+
+    return res.status(200).json({
+      users,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Unable to fetch team members",
+    });
+  }
+};
+
 const createTicket = async (req, res) => {
   try {
     const {
@@ -127,6 +143,7 @@ const createTicket = async (req, res) => {
 };
 
 module.exports = {
+  getTeamMembers,
   getTeamLeaders,
   createTicket,
 };

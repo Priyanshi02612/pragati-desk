@@ -5,6 +5,7 @@ import { Card } from "../components/ui/Card";
 import { InputField } from "../components/ui/InputField";
 import { Modal } from "../components/ui/Modal";
 import { Table } from "../components/ui/Table";
+import { Avatar } from "../components/ui/Avatar";
 import { uploadImageToCloudinary } from "../services/cloudinaryApi";
 import { formatPercent } from "../utils/format";
 
@@ -24,13 +25,20 @@ export const AdminEmployeesPage = () => {
     avatar: "",
   });
 
-  const employees = useMemo(
-    () => users.filter((user) => user.role === "Employee"),
-    [users],
-  );
-
   const employeeColumns = [
-    { key: "name", label: "Members" },
+    {
+      key: "name",
+      label: "Members",
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <Avatar src={row.avatar} name={row.name} size="sm" />
+          <div>
+            <p className="font-medium text-brand-text">{row.name}</p>
+            <p className="text-xs text-brand-muted">{row.role}</p>
+          </div>
+        </div>
+      ),
+    },
     { key: "department", label: "Department" },
     { key: "email", label: "Email" },
     {
@@ -63,7 +71,7 @@ export const AdminEmployeesPage = () => {
             Create team member
           </Button>
         </div>
-        <Table columns={employeeColumns} rows={employees} />
+        <Table columns={employeeColumns} rows={users} />
       </Card>
 
       <Modal
@@ -84,7 +92,9 @@ export const AdminEmployeesPage = () => {
 
                 if (employeeForm.avatarFile) {
                   setIsUploadingImage(true);
-                  avatar = await uploadImageToCloudinary(employeeForm.avatarFile);
+                  avatar = await uploadImageToCloudinary(
+                    employeeForm.avatarFile,
+                  );
                 }
 
                 return createEmployee({

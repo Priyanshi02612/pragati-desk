@@ -2,6 +2,7 @@ import { ArrowRight, Plus, TicketPlus, TrendingUp, Users2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAppContext } from "../app/AppContext";
 import { StatCard } from "../components/dashboard/StatCard";
+import { Avatar } from "../components/ui/Avatar";
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 import { formatNumber, formatPercent } from "../utils/format";
@@ -91,9 +92,16 @@ export const AdminDashboardPage = () => {
             {recentEmployees.map((employee) => (
               <div key={employee.id} className="rounded-3xl bg-slate-50 p-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-brand-text">
-                    {employee.name}
-                  </h3>
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      src={employee.avatar}
+                      name={employee.name}
+                      size="sm"
+                    />
+                    <h3 className="text-lg font-semibold text-brand-text">
+                      {employee.name}
+                    </h3>
+                  </div>
                   <Badge>
                     {employee.performance < 85 ? "Delayed" : "Completed"}
                   </Badge>

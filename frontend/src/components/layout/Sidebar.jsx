@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAppContext } from "../../app/AppContext";
+import { Avatar } from "../ui/Avatar";
+import adminAvatar from "../../assets/admin.png";
 
 const roleConfig = {
   Admin: [
@@ -74,11 +76,16 @@ export const Sidebar = () => {
       </nav>
 
       <div className="mt-auto rounded-3xl bg-slate-950 px-4 py-5 text-white">
-        <p className="text-xs uppercase tracking-[0.24em] text-white/60">
+        <p className="text-xs uppercase tracking-[0.24em] text-white/60 font-extrabold">
           Signed in as
         </p>
-        <p className="mt-2 text-base font-semibold">{currentUser.name}</p>
-        <p className="text-sm text-white/70">{currentUser.role}</p>
+        <div className="mt-3 flex items-center gap-3">
+          <Avatar src={adminAvatar} name={currentUser.name} size="md" />
+          <div>
+            <p className="text-base font-semibold">{currentUser.name}</p>
+            <p className="text-sm text-white/70">{currentUser.role}</p>
+          </div>
+        </div>
         <button
           className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2 text-sm font-medium transition hover:bg-white/20"
           type="button"

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getCurrentUser, loginUser, registerUser } from "../services/authApi";
-import { createAdminTicket } from "../services/adminApi";
+import { createAdminTicket, getAdminUsers } from "../services/adminApi";
 import {
   getMyNotifications,
   markNotificationAsRead,
@@ -87,6 +87,18 @@ const normalizeNotification = (notification) => {
   };
 };
 
+const normalizeUser = (user) => {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    ...user,
+    id: user.id || user._id,
+    role: toRoleLabel(user.role),
+  };
+};
+
 const mergeNotifications = (currentNotifications, incomingNotifications) => {
   const notificationsById = new Map(
     currentNotifications.map((notification) => [notification.id, notification]),
@@ -160,6 +172,35 @@ export const useDashboardData = () => {
     }
 
     window.localStorage.removeItem(STORAGE_KEY);
+  }, [currentUser]);
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (!token || currentUser?.role !== "Admin") {
+      return;
+    }
+
+    let isMounted = true;
+
+    getAdminUsers()
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setData((current) => ({
+          ...current,
+          users: (response.users || []).map(normalizeUser).filter(Boolean),
+        }));
+      })
+      .catch(() => {
+        // Keep the current local users state if the fetch fails.
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [currentUser]);
 
   useEffect(() => {
