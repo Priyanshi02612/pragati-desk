@@ -11,8 +11,8 @@ export const AdminDashboardPage = () => {
   const { metrics, tickets, users, currentUser } = useAppContext();
   const recentEmployees = users
     .filter((user) => user.role === "Employee")
-    .slice(0, 3);
-  const recentTickets = tickets.slice(0, 3);
+    .slice(0, 6);
+  const recentTickets = tickets.slice(0, 2);
 
   return (
     <div className="space-y-6">
@@ -88,7 +88,7 @@ export const AdminDashboardPage = () => {
               <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {recentEmployees.map((employee) => (
               <div key={employee.id} className="rounded-3xl bg-slate-50 p-5">
                 <div className="flex items-center justify-between">
@@ -102,8 +102,8 @@ export const AdminDashboardPage = () => {
                       {employee.name}
                     </h3>
                   </div>
-                  <Badge>
-                    {employee.performance < 85 ? "Delayed" : "Completed"}
+                  <Badge tone="bg-rose-100 text-rose-700">
+                    {employee.performance < 85 ? "Needs Improvement" : "On Track"}
                   </Badge>
                 </div>
                 <p className="mt-2 text-sm text-brand-muted">

@@ -5,6 +5,11 @@ export const getAdminUsers = () =>
     method: "GET",
   });
 
+export const getTickets = () =>
+  apiRequest("/tickets", {
+    method: "GET",
+  });
+
 export const getAdminLeaders = () =>
   apiRequest("/admin/leaders", {
     method: "GET",

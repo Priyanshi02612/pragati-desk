@@ -98,13 +98,6 @@ export const AdminTicketsPage = () => {
         <Badge tone="bg-amber-50 text-amber-700">{row.ticketType}</Badge>
       ),
     },
-    {
-      key: "description",
-      label: "Description",
-      render: (row) => (
-        <span className="max-w-md text-brand-muted">{row.description}</span>
-      ),
-    },
     { key: "department", label: "Department" },
     {
       key: "assignedLeaderId",

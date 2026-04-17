@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { getCurrentUser, loginUser, registerUser } from "../services/authApi";
-import { createAdminTicket, getAdminUsers } from "../services/adminApi";
+import {
+  createAdminTicket,
+  getAdminUsers,
+  getTickets,
+} from "../services/adminApi";
 import {
   getMyNotifications,
   markNotificationAsRead,
@@ -196,6 +200,35 @@ export const useDashboardData = () => {
       })
       .catch(() => {
         // Keep the current local users state if the fetch fails.
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUser]);
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (!token || !currentUser) {
+      return;
+    }
+
+    let isMounted = true;
+
+    getTickets()
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setData((current) => ({
+          ...current,
+          tickets: (response.tickets || []).map(normalizeTicket).filter(Boolean),
+        }));
+      })
+      .catch(() => {
+        // Keep the current local tickets state if the fetch fails.
       });
 
     return () => {
