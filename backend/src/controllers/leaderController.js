@@ -66,7 +66,7 @@ const createTask = async (req, res) => {
 
     const notification = await Notification.create({
       title: "New task assigned",
-      message: `${title.trim()} has been assigned to you.`,
+      message: `${taskNumber} • ${title.trim()} has been assigned to you.`,
       type: "assignment",
       role: "Employee",
       targetUserId: assigneeId,

@@ -1,11 +1,13 @@
 const mongoose = require("mongoose");
 const Notification = require("../models/Notification");
+const { normalizeRole } = require("../utils/roles");
 
 const getMyNotifications = async (req, res) => {
   try {
+    const normalizedRole = normalizeRole(req.user.role);
     const notifications = await Notification.find({
       $or: [
-        { role: req.user.role, targetUserId: null },
+        { role: normalizedRole, targetUserId: null },
         { targetUserId: req.user.id },
       ],
     })
@@ -22,10 +24,11 @@ const getMyNotifications = async (req, res) => {
 
 const markNotificationRead = async (req, res) => {
   try {
+    const normalizedRole = normalizeRole(req.user.role);
     const filter = {
       _id: new mongoose.Types.ObjectId(req.params.notificationId),
       $or: [
-        { role: req.user.role, targetUserId: null },
+        { role: normalizedRole, targetUserId: null },
         { targetUserId: req.user.id },
       ],
     };
