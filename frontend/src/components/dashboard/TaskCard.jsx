@@ -104,7 +104,7 @@ export const TaskCard = ({ task, assignee, ticket, onUpdate, onDelay }) => {
         <Button className="gap-2" variant="secondary" onClick={completeTask}>
           Complete
         </Button>
-        <Button className="gap-2" variant="accent" onClick={submitDelay}>
+        <Button className="gap-2" variant="warning" onClick={submitDelay}>
           <TriangleAlert size={16} />
           Delay reason
         </Button>

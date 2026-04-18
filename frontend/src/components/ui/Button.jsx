@@ -12,6 +12,7 @@ export const Button = ({
     ghost: "bg-white/70 text-brand-text hover:bg-white",
     danger: "bg-brand-danger text-white hover:bg-red-700",
     accent: "bg-brand-accent text-white hover:bg-amber-600",
+    warning: "bg-rose-100 text-rose-700 hover:bg-rose-200",
   };
 
   return (

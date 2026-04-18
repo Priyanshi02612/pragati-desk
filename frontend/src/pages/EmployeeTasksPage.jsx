@@ -1,19 +1,10 @@
-import {
-  CalendarDays,
-  Clock3,
-  GripVertical,
-  Pause,
-  Play,
-  TriangleAlert,
-} from "lucide-react";
+import { CalendarDays, Clock3, GripVertical } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAppContext } from "../app/AppContext";
-import { TimerDisplay } from "../components/dashboard/TimerDisplay";
+import { DelayReasonModal } from "../components/tasks/DelayReasonModal";
+import { TaskDetailsModal } from "../components/tasks/TaskDetailsModal";
 import { Badge } from "../components/ui/Badge";
-import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import { InputField } from "../components/ui/InputField";
-import { Modal } from "../components/ui/Modal";
 import { formatNumber } from "../utils/format";
 
 const BOARD_COLUMNS = [
@@ -327,161 +318,48 @@ export const EmployeeTasksPage = () => {
         </Card>
       )}
 
-      <Modal
-        title={activeSelectedTask?.title || "Task Details"}
-        description="Review ticket context, manage time tracking, and update task progress."
-        isOpen={Boolean(activeSelectedTask)}
+      <TaskDetailsModal
+        task={activeSelectedTask}
+        ticket={
+          activeSelectedTask
+            ? ticketLookup.get(activeSelectedTask.ticketId)
+            : null
+        }
+        seconds={
+          activeSelectedTask
+            ? (secondsByTask[activeSelectedTask.id] ??
+              activeSelectedTask.timeSpent)
+            : 0
+        }
+        isTimerRunning={Boolean(
+          activeSelectedTask && runningTaskIds[activeSelectedTask.id],
+        )}
         onClose={() => setSelectedTask(null)}
-      >
-        {activeSelectedTask ? (
-          <div className="space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
-                  {activeSelectedTask.taskNumber || activeSelectedTask.id}
-                </p>
-                <p className="mt-2 text-sm text-brand-muted">
-                  {ticketLookup.get(activeSelectedTask.ticketId)
-                    ?.ticketNumber || activeSelectedTask.ticketId}
-                </p>
-              </div>
-              <Badge>{activeSelectedTask.status}</Badge>
-            </div>
+        onStart={() => startTask(activeSelectedTask.id)}
+        onStop={() => stopTask(activeSelectedTask.id)}
+        onComplete={() => {
+          completeTask(activeSelectedTask.id);
+          setSelectedTask(null);
+        }}
+        onReportDelay={() => {
+          openDelayModal(activeSelectedTask);
+        }}
+      />
 
-            <div className="rounded-3xl bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-muted">
-                Ticket Context
-              </p>
-              <p className="mt-2 font-medium text-brand-text">
-                {ticketLookup.get(activeSelectedTask.ticketId)?.title ||
-                  "Linked ticket"}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {ticketLookup.get(activeSelectedTask.ticketId)?.ticketType ? (
-                  <Badge tone="bg-amber-50 text-amber-700">
-                    {ticketLookup.get(activeSelectedTask.ticketId)?.ticketType}
-                  </Badge>
-                ) : null}
-                <Badge tone="bg-blue-50 text-brand-secondary">
-                  Due {activeSelectedTask.dueDate || "No date"}
-                </Badge>
-              </div>
-              {ticketLookup.get(activeSelectedTask.ticketId)?.description ? (
-                <p className="mt-3 text-sm leading-6 text-brand-muted">
-                  {ticketLookup.get(activeSelectedTask.ticketId)?.description}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="rounded-3xl bg-slate-950 p-4 text-white">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm text-white/70">Time tracked</p>
-                  <div className="mt-3">
-                    <TimerDisplay
-                      seconds={
-                        secondsByTask[activeSelectedTask.id] ??
-                        activeSelectedTask.timeSpent
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    className="gap-2"
-                    onClick={() => startTask(activeSelectedTask.id)}
-                    disabled={activeSelectedTask.status === "Completed"}
-                  >
-                    <Play size={16} />
-                    Start
-                  </Button>
-                  <Button
-                    className="gap-2"
-                    variant="muted"
-                    onClick={() => stopTask(activeSelectedTask.id)}
-                    disabled={!runningTaskIds[activeSelectedTask.id]}
-                  >
-                    <Pause size={16} />
-                    Stop
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  completeTask(activeSelectedTask.id);
-                  setSelectedTask(null);
-                }}
-                disabled={activeSelectedTask.status === "Completed"}
-              >
-                Mark as Done
-              </Button>
-              <Button
-                className="gap-2"
-                variant="accent"
-                onClick={() => {
-                  openDelayModal(activeSelectedTask);
-                  setSelectedTask(null);
-                }}
-                disabled={activeSelectedTask.status === "Completed"}
-              >
-                <TriangleAlert size={16} />
-                Report Delay
-              </Button>
-            </div>
-          </div>
-        ) : null}
-      </Modal>
-
-      <Modal
-        title="Submit Delay Reason"
-        description="Share the blocker so your team leader can review the request."
-        isOpen={Boolean(delayTask)}
+      <DelayReasonModal
+        task={delayTask}
+        delayReason={delayReason}
+        onDelayReasonChange={setDelayReason}
         onClose={() => {
           setDelayTask(null);
           setDelayReason("");
         }}
-      >
-        <form
-          className="space-y-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            submitDelayRequest(delayTask.id, delayReason);
-            setDelayTask(null);
-            setDelayReason("");
-          }}
-        >
-          <InputField
-            label="Reason"
-            as="textarea"
-            rows="4"
-            value={delayReason}
-            placeholder="Describe the issue causing the delay"
-            onChange={(event) => setDelayReason(event.target.value)}
-          />
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="muted"
-              onClick={() => {
-                setDelayTask(null);
-                setDelayReason("");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={!delayReason.trim()}
-              className="disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Submit request
-            </Button>
-          </div>
-        </form>
-      </Modal>
+        onSubmit={() => {
+          submitDelayRequest(delayTask.id, delayReason);
+          setDelayTask(null);
+          setDelayReason("");
+        }}
+      />
     </div>
   );
 };
