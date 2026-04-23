@@ -35,15 +35,23 @@ const BOARD_COLUMNS = [
 ];
 
 export const EmployeeTasksPage = () => {
-  const { currentUser, submitDelayRequest, tasks, tickets, updateTask } =
-    useAppContext();
+  const {
+    completeTask,
+    currentUser,
+    startTaskTimer,
+    stopTaskTimer,
+    submitDelayRequest,
+    tasks,
+    tickets,
+  } = useAppContext();
   const [selectedTask, setSelectedTask] = useState(null);
   const [delayTask, setDelayTask] = useState(null);
   const [delayReason, setDelayReason] = useState("");
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [dropTargetStatus, setDropTargetStatus] = useState(null);
-  const [runningTaskIds, setRunningTaskIds] = useState({});
-  const [secondsByTask, setSecondsByTask] = useState({});
+  const [tickNow, setTickNow] = useState(Date.now());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   const myTasks = useMemo(
     () => tasks.filter((task) => task.assigneeId === currentUser.id),
@@ -71,72 +79,56 @@ export const EmployeeTasksPage = () => {
   }, {});
 
   useEffect(() => {
-    setSecondsByTask((current) => {
-      const next = { ...current };
+    const hasRunningTask = myTasks.some((task) => Boolean(task.timerStartedAt));
 
-      myTasks.forEach((task) => {
-        next[task.id] =
-          typeof next[task.id] === "number" ? next[task.id] : task.timeSpent;
-      });
-
-      Object.keys(next).forEach((taskId) => {
-        if (!taskLookup.has(taskId)) {
-          delete next[taskId];
-        }
-      });
-
-      return next;
-    });
-  }, [myTasks, taskLookup]);
-
-  useEffect(() => {
-    const activeTaskIds = Object.keys(runningTaskIds).filter(
-      (taskId) => runningTaskIds[taskId],
-    );
-
-    if (!activeTaskIds.length) {
+    if (!hasRunningTask) {
       return undefined;
     }
 
     const interval = window.setInterval(() => {
-      setSecondsByTask((current) => {
-        const next = { ...current };
-        activeTaskIds.forEach((taskId) => {
-          next[taskId] = (next[taskId] || 0) + 1;
-        });
-        return next;
-      });
+      setTickNow(Date.now());
     }, 1000);
 
     return () => window.clearInterval(interval);
-  }, [runningTaskIds]);
+  }, [myTasks]);
 
-  const persistTaskUpdate = (taskId, updates) => {
-    updateTask(taskId, {
-      ...updates,
-      ...(typeof secondsByTask[taskId] === "number"
-        ? { timeSpent: secondsByTask[taskId] }
-        : {}),
-    });
+  const getTrackedSeconds = (task) => {
+    if (!task) {
+      return 0;
+    }
+
+    const baseSeconds = Number(task.timeSpent) || 0;
+
+    if (!task.timerStartedAt) {
+      return baseSeconds;
+    }
+
+    const elapsedSeconds = Math.max(
+      0,
+      Math.floor((tickNow - new Date(task.timerStartedAt).getTime()) / 1000),
+    );
+
+    return baseSeconds + elapsedSeconds;
   };
 
-  const startTask = (taskId) => {
-    setRunningTaskIds((current) => ({ ...current, [taskId]: true }));
-    persistTaskUpdate(taskId, { status: "In Progress" });
-  };
+  const withTaskMutation = async (taskId, action, options = {}) => {
+    setActionError("");
+    setIsSubmitting(true);
 
-  const stopTask = (taskId) => {
-    setRunningTaskIds((current) => ({ ...current, [taskId]: false }));
-    persistTaskUpdate(taskId, { status: "In Progress" });
-  };
+    try {
+      await action(taskId);
 
-  const completeTask = (taskId) => {
-    setRunningTaskIds((current) => ({ ...current, [taskId]: false }));
-    persistTaskUpdate(taskId, { status: "Completed" });
+      if (options.closeDetails) {
+        setSelectedTask(null);
+      }
+    } catch (error) {
+      setActionError(error.message || "Unable to update the task right now.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const openDelayModal = (task) => {
-    setRunningTaskIds((current) => ({ ...current, [task.id]: false }));
     setDelayTask(task);
   };
 
@@ -157,11 +149,13 @@ export const EmployeeTasksPage = () => {
     }
 
     if (nextStatus === "Completed") {
-      completeTask(taskId);
+      withTaskMutation(taskId, completeTask);
       return;
     }
 
-    persistTaskUpdate(taskId, { status: nextStatus });
+    if (nextStatus === "In Progress") {
+      withTaskMutation(taskId, startTaskTimer);
+    }
   };
 
   const handleDrop = (status) => {
@@ -197,6 +191,14 @@ export const EmployeeTasksPage = () => {
           </div>
         </div>
       </Card>
+
+      {actionError ? (
+        <Card>
+          <div className="rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
+            {actionError}
+          </div>
+        </Card>
+      ) : null}
 
       {myTasks.length ? (
         <div className="overflow-x-auto rounded-3xl">
@@ -241,8 +243,7 @@ export const EmployeeTasksPage = () => {
                 <div className="space-y-3">
                   {groupedTasks[column.key]?.length ? (
                     groupedTasks[column.key].map((task) => {
-                      const trackedSeconds =
-                        secondsByTask[task.id] ?? task.timeSpent;
+                      const trackedSeconds = getTrackedSeconds(task);
 
                       return (
                         <article
@@ -327,19 +328,18 @@ export const EmployeeTasksPage = () => {
         }
         seconds={
           activeSelectedTask
-            ? (secondsByTask[activeSelectedTask.id] ??
-              activeSelectedTask.timeSpent)
+            ? getTrackedSeconds(activeSelectedTask)
             : 0
         }
-        isTimerRunning={Boolean(
-          activeSelectedTask && runningTaskIds[activeSelectedTask.id],
-        )}
+        isTimerRunning={Boolean(activeSelectedTask?.timerStartedAt)}
+        isSubmitting={isSubmitting}
         onClose={() => setSelectedTask(null)}
-        onStart={() => startTask(activeSelectedTask.id)}
-        onStop={() => stopTask(activeSelectedTask.id)}
+        onStart={() => withTaskMutation(activeSelectedTask.id, startTaskTimer)}
+        onStop={() => withTaskMutation(activeSelectedTask.id, stopTaskTimer)}
         onComplete={() => {
-          completeTask(activeSelectedTask.id);
-          setSelectedTask(null);
+          withTaskMutation(activeSelectedTask.id, completeTask, {
+            closeDetails: true,
+          });
         }}
         onReportDelay={() => {
           openDelayModal(activeSelectedTask);
@@ -349,15 +349,32 @@ export const EmployeeTasksPage = () => {
       <DelayReasonModal
         task={delayTask}
         delayReason={delayReason}
+        isSubmitting={isSubmitting}
         onDelayReasonChange={setDelayReason}
         onClose={() => {
+          if (isSubmitting) {
+            return;
+          }
+
           setDelayTask(null);
           setDelayReason("");
         }}
-        onSubmit={() => {
-          submitDelayRequest(delayTask.id, delayReason);
-          setDelayTask(null);
-          setDelayReason("");
+        onSubmit={async () => {
+          setActionError("");
+          setIsSubmitting(true);
+
+          try {
+            await submitDelayRequest(delayTask.id, delayReason);
+            setDelayTask(null);
+            setDelayReason("");
+            setSelectedTask(null);
+          } catch (error) {
+            setActionError(
+              error.message || "Unable to submit the delay request right now.",
+            );
+          } finally {
+            setIsSubmitting(false);
+          }
         }}
       />
     </div>

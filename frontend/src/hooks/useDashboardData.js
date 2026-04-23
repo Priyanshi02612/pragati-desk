@@ -5,7 +5,14 @@ import {
   getAdminUsers,
   getTickets,
 } from "../services/adminApi";
-import { createLeaderTask, getTasks } from "../services/taskApi";
+import {
+  completeTask as completeTaskRequest,
+  createLeaderTask,
+  getTasks,
+  startTaskTimer as startTaskTimerRequest,
+  stopTaskTimer as stopTaskTimerRequest,
+  submitTaskDelayRequest,
+} from "../services/taskApi";
 import {
   getMyNotifications,
   markNotificationAsRead,
@@ -110,6 +117,7 @@ const normalizeTask = (task) => {
         ? task.assigneeId?._id || task.assigneeId?.id
         : task.assigneeId,
     dueDate: task.dueDate ? task.dueDate.toString().split("T")[0] : "",
+    timerStartedAt: task.timerStartedAt || null,
   };
 };
 
@@ -478,36 +486,70 @@ export const useDashboardData = () => {
     }));
   };
 
-  const submitDelayRequest = (taskId, reason) => {
+  const startTaskTimer = async (taskId) => {
+    const response = await startTaskTimerRequest(taskId);
+    const task = normalizeTask(response.task);
+
     setData((current) => ({
       ...current,
-      tasks: current.tasks.map((task) =>
-        task.id === taskId
-          ? { ...task, status: "Delayed", delayReason: reason }
-          : task,
-      ),
-      delayRequests: [
-        {
-          id: `DL-${Date.now()}`,
-          taskId,
-          employeeId: currentUser.id,
-          reason,
-          status: "Pending",
-        },
-        ...current.delayRequests,
-      ],
-      notifications: [
-        {
-          id: `NTF-${Date.now()}`,
-          title: "Delay request submitted",
-          message: `${currentUser.name} requested additional time.`,
-          type: "delay",
-          read: false,
-          role: "Team Leader",
-        },
-        ...current.notifications,
-      ],
+      tasks: current.tasks.map((item) => (item.id === taskId ? task : item)),
     }));
+
+    return task;
+  };
+
+  const stopTaskTimer = async (taskId) => {
+    const response = await stopTaskTimerRequest(taskId);
+    const task = normalizeTask(response.task);
+
+    setData((current) => ({
+      ...current,
+      tasks: current.tasks.map((item) => (item.id === taskId ? task : item)),
+    }));
+
+    return task;
+  };
+
+  const completeTask = async (taskId) => {
+    const response = await completeTaskRequest(taskId);
+    const task = normalizeTask(response.task);
+
+    setData((current) => ({
+      ...current,
+      tasks: current.tasks.map((item) => (item.id === taskId ? task : item)),
+    }));
+
+    return task;
+  };
+
+  const submitDelayRequest = async (taskId, reason) => {
+    const response = await submitTaskDelayRequest(taskId, reason);
+    const task = normalizeTask(response.task);
+    const delayRequest = response.delayRequest
+      ? {
+          ...response.delayRequest,
+          id: response.delayRequest.id || response.delayRequest._id,
+          taskId:
+            typeof response.delayRequest.taskId === "object"
+              ? response.delayRequest.taskId?._id || response.delayRequest.taskId?.id
+              : response.delayRequest.taskId,
+          employeeId:
+            typeof response.delayRequest.employeeId === "object"
+              ? response.delayRequest.employeeId?._id ||
+                response.delayRequest.employeeId?.id
+              : response.delayRequest.employeeId,
+        }
+      : null;
+
+    setData((current) => ({
+      ...current,
+      tasks: current.tasks.map((item) => (item.id === taskId ? task : item)),
+      delayRequests: delayRequest
+        ? [delayRequest, ...current.delayRequests]
+        : current.delayRequests,
+    }));
+
+    return { task, delayRequest };
   };
 
   const reviewDelayRequest = (requestId, status) => {
@@ -554,6 +596,9 @@ export const useDashboardData = () => {
     createTicket,
     createTask,
     updateTask,
+    startTaskTimer,
+    stopTaskTimer,
+    completeTask,
     submitDelayRequest,
     reviewDelayRequest,
     markNotificationRead,

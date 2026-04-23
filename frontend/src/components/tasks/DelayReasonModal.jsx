@@ -5,6 +5,7 @@ import { Modal } from "../ui/Modal";
 export const DelayReasonModal = ({
   task,
   delayReason,
+  isSubmitting,
   onDelayReasonChange,
   onClose,
   onSubmit,
@@ -31,15 +32,15 @@ export const DelayReasonModal = ({
         onChange={(event) => onDelayReasonChange(event.target.value)}
       />
       <div className="flex justify-end gap-3">
-        <Button variant="muted" onClick={onClose}>
+        <Button variant="muted" onClick={onClose} disabled={isSubmitting}>
           Cancel
         </Button>
         <Button
           type="submit"
-          disabled={!delayReason.trim()}
+          disabled={!delayReason.trim() || isSubmitting}
           className="disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Submit request
+          {isSubmitting ? "Submitting..." : "Submit request"}
         </Button>
       </div>
     </form>

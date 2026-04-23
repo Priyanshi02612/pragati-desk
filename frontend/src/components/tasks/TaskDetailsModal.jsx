@@ -17,6 +17,7 @@ export const TaskDetailsModal = ({
   ticket,
   seconds,
   isTimerRunning,
+  isSubmitting,
   onClose,
   onStart,
   onStop,
@@ -152,19 +153,19 @@ export const TaskDetailsModal = ({
                 <Button
                   className="w-full justify-center gap-2 rounded-[1.35rem] py-4 text-lg"
                   onClick={onStart}
-                  disabled={task.status === "Completed"}
+                  disabled={task.status === "Completed" || isSubmitting}
                 >
                   <Play size={18} />
-                  Start timer
+                  {isSubmitting && !isTimerRunning ? "Starting..." : "Start timer"}
                 </Button>
                 <Button
                   className="w-full justify-center gap-2 rounded-[1.35rem] py-4 text-lg"
                   variant="muted"
                   onClick={onStop}
-                  disabled={!isTimerRunning}
+                  disabled={!isTimerRunning || isSubmitting}
                 >
                   <Pause size={18} />
-                  Stop timer
+                  {isSubmitting && isTimerRunning ? "Stopping..." : "Stop timer"}
                 </Button>
               </div>
             </div>
@@ -174,7 +175,7 @@ export const TaskDetailsModal = ({
                 className="justify-center gap-3 rounded-[1.45rem] py-5 font-semibold shadow-[0_12px_30px_rgba(244,63,94,0.16)]"
                 variant="warning"
                 onClick={onReportDelay}
-                disabled={task.status === "Completed"}
+                disabled={task.status === "Completed" || isSubmitting}
               >
                 <TriangleAlert size={22} />
                 Report Delay
@@ -183,10 +184,10 @@ export const TaskDetailsModal = ({
               <Button
                 className="justify-center gap-3 rounded-[1.45rem] py-5 font-semibold shadow-[0_12px_30px_rgba(22,163,74,0.22)]"
                 onClick={onComplete}
-                disabled={task.status === "Completed"}
+                disabled={task.status === "Completed" || isSubmitting}
               >
                 <CheckCircle2 size={24} />
-                Mark as Done
+                {isSubmitting ? "Saving..." : "Mark as Done"}
               </Button>
             </section>
           </div>

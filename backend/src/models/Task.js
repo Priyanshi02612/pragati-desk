@@ -35,6 +35,10 @@ const taskSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    timerStartedAt: {
+      type: Date,
+      default: null,
+    },
     delayReason: {
       type: String,
       default: "",
