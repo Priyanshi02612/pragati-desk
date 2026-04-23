@@ -1,37 +1,16 @@
 import {
-  CalendarDays,
   CheckCircle2,
   Clock3,
-  Download,
   FileText,
-  FolderKanban,
-  Link2,
   Pause,
   Play,
   TriangleAlert,
-  UserRound,
   X,
 } from "lucide-react";
 import { secondsToClock } from "../../utils/format";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { Modal } from "../ui/Modal";
-
-const getPriorityCopy = (status) => {
-  if (status === "Delayed") {
-    return "Needs attention";
-  }
-
-  if (status === "Completed") {
-    return "Ready to report";
-  }
-
-  if (status === "In Progress") {
-    return "Priority active";
-  }
-
-  return "Priority high";
-};
 
 export const TaskDetailsModal = ({
   task,
@@ -47,7 +26,8 @@ export const TaskDetailsModal = ({
   <Modal
     isOpen={Boolean(task)}
     onClose={onClose}
-    className="max-w-4xl overflow-hidden border border-white/80 bg-[#eef3ff] p-0 shadow-[0_32px_120px_rgba(15,23,42,0.18)]"
+    className="overflow-hidden border border-white/80 bg-[#eef3ff] p-0 shadow-[0_32px_120px_rgba(15,23,42,0.18)]"
+    maxWidth="max-w-4xl"
     hideHeader
   >
     {task ? (

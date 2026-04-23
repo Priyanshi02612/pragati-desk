@@ -13,6 +13,7 @@ export const Modal = ({
   onClose,
   children,
   className = "",
+  maxWidth="max-w-lg",
   hideHeader = false,
 }) => {
   return (
@@ -23,7 +24,7 @@ export const Modal = ({
       />
       <div className="fixed inset-0 overflow-y-auto p-4">
         <div className="flex min-h-full items-center justify-center">
-          <DialogPanel className={`panel w-full max-w-lg p-6 ${className}`}>
+          <DialogPanel className={`panel w-full p-6 ${className} ${maxWidth}`}>
             {!hideHeader ? (
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
