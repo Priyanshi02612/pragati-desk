@@ -17,20 +17,39 @@ import {
   getMyNotifications,
   markNotificationAsRead,
 } from "../services/notificationApi";
+import { getPerformanceInsights } from "../services/performanceApi";
 import { TOKEN_STORAGE_KEY } from "../services/api";
 import { connectNotificationSocket } from "../services/socket";
 import { toRoleLabel } from "../utils/roles";
-import { mockLeaderboard, mockPerformanceSeries } from "../data/mockData";
 
 const STORAGE_KEY = "pragatidesk-session";
+const emptyPerformanceSeries = {
+  completion: [],
+  monthly: [],
+};
+const emptyLeaderboard = {
+  month: {
+    name: "No data yet",
+    score: 0,
+    role: "Employee",
+    achievement: "Monthly rankings will appear once tasks are assigned.",
+  },
+  year: {
+    name: "No data yet",
+    score: 0,
+    role: "Employee",
+    achievement: "Yearly rankings will appear once tasks are assigned.",
+  },
+  rankings: [],
+};
 const initialData = {
   users: [],
   tickets: [],
   tasks: [],
   notifications: [],
   delayRequests: [],
-  performanceSeries: mockPerformanceSeries,
-  leaderboard: mockLeaderboard,
+  performanceSeries: emptyPerformanceSeries,
+  leaderboard: emptyLeaderboard,
 };
 
 const normalizeAuthUser = (user) => {
@@ -133,6 +152,26 @@ const normalizeUser = (user) => {
   };
 };
 
+const mergePerformanceIntoUsers = (users, performanceEmployees) => {
+  const performanceById = new Map(
+    performanceEmployees.map((employee) => [employee.id || employee._id, employee]),
+  );
+
+  return users.map((user) => {
+    const performanceMatch = performanceById.get(user.id);
+
+    if (!performanceMatch) {
+      return user;
+    }
+
+    return {
+      ...user,
+      performance: performanceMatch.performance,
+      performanceStats: performanceMatch.stats,
+    };
+  });
+};
+
 const mergeNotifications = (currentNotifications, incomingNotifications) => {
   const notificationsById = new Map(
     currentNotifications.map((notification) => [notification.id, notification]),
@@ -156,6 +195,51 @@ export const useDashboardData = () => {
     return stored ? JSON.parse(stored) : null;
   });
   const [isSessionReady, setIsSessionReady] = useState(false);
+
+  const syncPerformanceData = async () => {
+    const response = await getPerformanceInsights();
+    const performanceEmployees = (response.employees || []).map(normalizeUser).filter(Boolean);
+
+    setData((current) => ({
+      ...current,
+      users: mergePerformanceIntoUsers(current.users, performanceEmployees),
+      performanceSeries: response.performanceSeries || emptyPerformanceSeries,
+      leaderboard: response.leaderboard || emptyLeaderboard,
+    }));
+
+    setCurrentUser((currentUserState) => {
+      if (!currentUserState) {
+        return currentUserState;
+      }
+
+      const performanceMatch = performanceEmployees.find(
+        (employee) => employee.id === currentUserState.id || employee.id === currentUserState.authId,
+      );
+
+      if (!performanceMatch) {
+        return currentUserState;
+      }
+
+      const nextStats = response.employees?.find(
+        (employee) => employee.id === performanceMatch.id,
+      )?.stats;
+      const hasSamePerformance = currentUserState.performance === performanceMatch.performance;
+      const hasSameStats =
+        JSON.stringify(currentUserState.performanceStats || null) === JSON.stringify(nextStats || null);
+
+      if (hasSamePerformance && hasSameStats) {
+        return currentUserState;
+      }
+
+      return {
+        ...currentUserState,
+        performance: performanceMatch.performance,
+        performanceStats: nextStats,
+      };
+    });
+
+    return response;
+  };
 
   useEffect(() => {
     const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -265,6 +349,18 @@ export const useDashboardData = () => {
       isMounted = false;
     };
   }, [currentUser]);
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (!token || !currentUser) {
+      return;
+    }
+
+    syncPerformanceData().catch(() => {
+      // Keep the existing local insights if the fetch fails.
+    });
+  }, [currentUser?.id, currentUser?.role, data.tasks.length, data.users.length]);
 
   useEffect(() => {
     const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -403,7 +499,7 @@ export const useDashboardData = () => {
     const employee = {
       id: response.user.id,
       authId: response.user.id,
-      performance: user.performance ?? 90,
+      performance: user.performance ?? 0,
       ...user,
     };
 
@@ -474,6 +570,8 @@ export const useDashboardData = () => {
       ],
     }));
 
+    await syncPerformanceData().catch(() => null);
+
     return task;
   };
 
@@ -495,6 +593,8 @@ export const useDashboardData = () => {
       tasks: current.tasks.map((item) => (item.id === taskId ? task : item)),
     }));
 
+    await syncPerformanceData().catch(() => null);
+
     return task;
   };
 
@@ -507,6 +607,8 @@ export const useDashboardData = () => {
       tasks: current.tasks.map((item) => (item.id === taskId ? task : item)),
     }));
 
+    await syncPerformanceData().catch(() => null);
+
     return task;
   };
 
@@ -518,6 +620,8 @@ export const useDashboardData = () => {
       ...current,
       tasks: current.tasks.map((item) => (item.id === taskId ? task : item)),
     }));
+
+    await syncPerformanceData().catch(() => null);
 
     return task;
   };
@@ -548,6 +652,8 @@ export const useDashboardData = () => {
         ? [delayRequest, ...current.delayRequests]
         : current.delayRequests,
     }));
+
+    await syncPerformanceData().catch(() => null);
 
     return { task, delayRequest };
   };

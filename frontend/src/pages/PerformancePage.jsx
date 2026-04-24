@@ -9,7 +9,15 @@ import { formatPercent } from '../utils/format';
 export const PerformancePage = () => {
   const { currentUser, performanceSeries, tasks, tickets, users } = useAppContext();
 
-  const employees = users.filter((user) => user.role === 'Employee');
+  const employees =
+    currentUser.role === 'Employee'
+      ? [
+          {
+            ...currentUser,
+            id: currentUser.id || currentUser.authId,
+          },
+        ]
+      : users.filter((user) => user.role === 'Employee');
   const assignedTickets = tickets.filter((ticket) => ticket.assignedLeaderId === currentUser.id);
   const leaderTeamIds = Array.from(
     new Set(

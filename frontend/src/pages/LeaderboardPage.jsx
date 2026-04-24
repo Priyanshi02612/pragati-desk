@@ -5,26 +5,8 @@ import { Card } from '../components/ui/Card';
 import { formatPercent } from '../utils/format';
 
 export const LeaderboardPage = () => {
-  const { currentUser, leaderboard, tasks, tickets, users } = useAppContext();
-
-  const employeeUsers = users.filter((user) => user.role === 'Employee');
-  const assignedTickets = tickets.filter((ticket) => ticket.assignedLeaderId === currentUser.id);
-  const leaderTeamIds = Array.from(
-    new Set(
-      tasks
-        .filter((task) => assignedTickets.some((ticket) => ticket.id === task.ticketId))
-        .map((task) => task.assigneeId),
-    ),
-  );
-
-  const scopedRankings =
-    currentUser.role === 'Admin'
-      ? leaderboard.rankings
-      : currentUser.role === 'Team Leader'
-        ? leaderboard.rankings.filter((entry) =>
-            leaderTeamIds.includes(users.find((user) => user.name === entry.name)?.id),
-          )
-        : leaderboard.rankings.filter((entry) => entry.name === currentUser.name);
+  const { currentUser, leaderboard } = useAppContext();
+  const scopedRankings = leaderboard.rankings || [];
 
   const roleMeta = useMemo(() => {
     if (currentUser.role === 'Admin') {
@@ -51,29 +33,49 @@ export const LeaderboardPage = () => {
   }, [currentUser.role]);
 
   const RoleIcon = roleMeta.icon;
-  const monthWinner =
-    currentUser.role === 'Admin'
-      ? leaderboard.month
-      : currentUser.role === 'Team Leader'
-        ? {
-            ...leaderboard.month,
-            name: scopedRankings[0]?.name || leaderboard.month.name,
-            score: scopedRankings[0]?.score || leaderboard.month.score,
-            achievement: 'Top team performer for the current leadership scope.',
-          }
-        : {
-            name: currentUser.name,
-            score: currentUser.performance,
-            achievement: 'Your current monthly performance snapshot.',
-          };
-  const yearWinner =
-    currentUser.role === 'Employee'
-      ? {
-          name: currentUser.name,
-          score: currentUser.performance,
-          achievement: 'Your year-to-date progress compared against your own goals.',
-        }
-      : leaderboard.year;
+  const monthWinner = useMemo(() => {
+    if (currentUser.role === 'Employee') {
+      return {
+        name: currentUser.name,
+        score: leaderboard.month?.score ?? currentUser.performance ?? 0,
+        achievement: 'Your current monthly performance snapshot.',
+      };
+    }
+
+    if (currentUser.role === 'Team Leader') {
+      return {
+        ...leaderboard.month,
+        name: leaderboard.month?.name || scopedRankings[0]?.name || 'No data yet',
+        score: leaderboard.month?.score ?? scopedRankings[0]?.score ?? 0,
+        achievement:
+          leaderboard.month?.achievement || 'Top team performer for the current leadership scope.',
+      };
+    }
+
+    return leaderboard.month;
+  }, [currentUser.name, currentUser.performance, currentUser.role, leaderboard.month, scopedRankings]);
+
+  const yearWinner = useMemo(() => {
+    if (currentUser.role === 'Employee') {
+      return {
+        name: currentUser.name,
+        score: leaderboard.year?.score ?? currentUser.performance ?? 0,
+        achievement: 'Your year-to-date progress compared against your own goals.',
+      };
+    }
+
+    if (currentUser.role === 'Team Leader') {
+      return {
+        ...leaderboard.year,
+        name: leaderboard.year?.name || scopedRankings[0]?.name || 'No data yet',
+        score: leaderboard.year?.score ?? scopedRankings[0]?.score ?? 0,
+        achievement:
+          leaderboard.year?.achievement || 'Top team performer for the current year in your scope.',
+      };
+    }
+
+    return leaderboard.year;
+  }, [currentUser.name, currentUser.performance, currentUser.role, leaderboard.year, scopedRankings]);
 
   return (
     <div className="space-y-6">
@@ -96,12 +98,12 @@ export const LeaderboardPage = () => {
               <p className="text-sm uppercase tracking-[0.22em] text-white/75">
                 {currentUser.role === 'Employee' ? 'My Monthly Score' : 'Top Monthly Performer'}
               </p>
-              <h2 className="mt-4 text-3xl font-bold">{monthWinner.name}</h2>
-              <p className="mt-2 text-sm text-white/80">{monthWinner.achievement}</p>
+              <h2 className="mt-4 text-xl font-bold">{monthWinner.name}</h2>
+              <p className="mt-1 text-sm text-white/80">{monthWinner.achievement}</p>
             </div>
             <Crown size={36} />
           </div>
-          <div className="mt-8 text-5xl font-bold">{formatPercent(monthWinner.score)}</div>
+          <div className="mt-2 text-3xl font-bold">{formatPercent(monthWinner.score)}</div>
         </Card>
 
         <Card className="overflow-hidden bg-gradient-to-br from-brand-secondary via-blue-700 to-slate-950 text-white">
@@ -110,12 +112,12 @@ export const LeaderboardPage = () => {
               <p className="text-sm uppercase tracking-[0.22em] text-white/75">
                 {currentUser.role === 'Employee' ? 'My Yearly Score' : 'Top Yearly Performer'}
               </p>
-              <h2 className="mt-4 text-3xl font-bold">{yearWinner.name}</h2>
-              <p className="mt-2 text-sm text-white/80">{yearWinner.achievement}</p>
+              <h2 className="mt-4 text-xl font-bold">{yearWinner.name}</h2>
+              <p className="mt- text-sm text-white/80">{yearWinner.achievement}</p>
             </div>
             <Trophy size={36} />
           </div>
-          <div className="mt-8 text-5xl font-bold">{formatPercent(yearWinner.score)}</div>
+          <div className="mt-2 text-3xl font-bold">{formatPercent(yearWinner.score)}</div>
         </Card>
       </div>
 
@@ -135,7 +137,7 @@ export const LeaderboardPage = () => {
         <div className="grid gap-4 lg:grid-cols-2">
           {scopedRankings.map((entry, index) => (
             <div
-              key={`${entry.name}-${entry.rank}`}
+              key={entry.id || `${entry.name}-${entry.rank}`}
               className="flex items-center justify-between rounded-3xl border border-brand-border/70 bg-slate-50 p-5 transition hover:-translate-y-1 hover:bg-white"
             >
               <div className="flex items-center gap-4">
@@ -144,7 +146,9 @@ export const LeaderboardPage = () => {
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.22em] text-brand-muted">
-                    {currentUser.role === 'Employee' ? 'Current Position' : `Rank #${index + 1}`}
+                    {currentUser.role === 'Employee'
+                      ? `Current Position${entry.rank ? ` • Rank #${entry.rank}` : ''}`
+                      : `Rank #${entry.rank || index + 1}`}
                   </p>
                   <h3 className="mt-1 text-lg font-semibold text-brand-text">{entry.name}</h3>
                 </div>
@@ -161,9 +165,13 @@ export const LeaderboardPage = () => {
               </div>
             </div>
           ))}
-          {!scopedRankings.length && currentUser.role === 'Team Leader' ? (
+          {!scopedRankings.length ? (
             <div className="rounded-3xl bg-slate-50 p-6 text-sm text-brand-muted">
-              No team leaderboard entries are available until tasks are assigned to employees.
+              {currentUser.role === 'Admin'
+                ? 'No organization leaderboard entries are available yet.'
+                : currentUser.role === 'Team Leader'
+                  ? 'No team leaderboard entries are available until tasks are assigned to employees.'
+                  : 'Your ranking will appear here once you receive tasks.'}
             </div>
           ) : null}
         </div>
