@@ -41,7 +41,7 @@ export const Sidebar = () => {
   const links = roleConfig[currentUser.role];
 
   return (
-    <aside className="panel-muted flex h-full flex-col p-5">
+    <aside className="panel-muted flex h-[calc(100vh-32px)] flex-col p-5">
       <div className="mb-8">
         <div className="inline-flex rounded-2xl bg-brand-primary px-3 py-2 text-sm font-bold text-white shadow-sm">
           PragatiDesk
