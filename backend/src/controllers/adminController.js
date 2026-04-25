@@ -1,7 +1,7 @@
 const Ticket = require("../models/Ticket");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
-const { pushNotificationToUser } = require("../utils/socketServer");
+const { pushNotificationToUser } = require("../utils/pusherServer");
 const { normalizeRole } = require("../utils/roles");
 const { DEPARTMENT_OPTIONS } = require("../constants/departments");
 const {
@@ -142,7 +142,7 @@ const createTicket = async (req, res) => {
       targetUserId: assignedLeaderId,
     });
 
-    pushNotificationToUser(assignedLeaderId, notification.toObject());
+    await pushNotificationToUser(assignedLeaderId, notification.toObject());
 
     return res.status(201).json({
       message: "Ticket created successfully",

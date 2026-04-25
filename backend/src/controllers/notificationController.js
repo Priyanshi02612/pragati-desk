@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Notification = require("../models/Notification");
 const { normalizeRole } = require("../utils/roles");
+const { authorizeUserChannel } = require("../utils/pusherServer");
 
 const getMyNotifications = async (req, res) => {
   try {
@@ -51,7 +52,28 @@ const markNotificationRead = async (req, res) => {
   }
 };
 
+const authorizeNotificationChannel = async (req, res) => {
+  try {
+    const authResponse = authorizeUserChannel({
+      socketId: req.body.socket_id,
+      userId: req.user.id,
+      channelName: req.body.channel_name,
+    });
+
+    if (!authResponse) {
+      return res.status(403).json({ message: "Unable to authorize channel" });
+    }
+
+    return res.status(200).send(authResponse);
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Unable to authorize notification channel",
+    });
+  }
+};
+
 module.exports = {
   getMyNotifications,
   markNotificationRead,
+  authorizeNotificationChannel,
 };

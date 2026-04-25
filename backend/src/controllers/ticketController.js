@@ -4,7 +4,7 @@ const DelayRequest = require("../models/DelayRequest");
 const Notification = require("../models/Notification");
 const { normalizeRole } = require("../utils/roles");
 const { ensureTaskNumbers } = require("../utils/taskNumbers");
-const { pushNotificationToUser } = require("../utils/socketServer");
+const { pushNotificationToUser } = require("../utils/pusherServer");
 
 const TASK_POPULATION = [
   { path: "ticketId", select: "_id ticketNumber title ticketType assignedLeaderId" },
@@ -222,7 +222,7 @@ const createDelayRequest = async (req, res) => {
         targetUserId: leaderId,
       });
 
-      pushNotificationToUser(leaderId, notification.toObject());
+      await pushNotificationToUser(leaderId, notification.toObject());
     }
 
     return respondWithTask(res, 201, "Delay request submitted", task._id, {

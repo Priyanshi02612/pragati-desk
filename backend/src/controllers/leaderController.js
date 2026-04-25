@@ -2,7 +2,7 @@ const Task = require("../models/Task");
 const Ticket = require("../models/Ticket");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
-const { pushNotificationToUser } = require("../utils/socketServer");
+const { pushNotificationToUser } = require("../utils/pusherServer");
 const { normalizeRole } = require("../utils/roles");
 const { getNextTaskNumber } = require("../utils/taskNumbers");
 
@@ -72,7 +72,7 @@ const createTask = async (req, res) => {
       targetUserId: assigneeId,
     });
 
-    pushNotificationToUser(assigneeId, notification.toObject());
+    await pushNotificationToUser(assigneeId, notification.toObject());
 
     return res.status(201).json({
       message: "Task created successfully",

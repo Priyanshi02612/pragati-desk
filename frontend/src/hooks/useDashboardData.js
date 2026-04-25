@@ -19,7 +19,7 @@ import {
 } from "../services/notificationApi";
 import { getPerformanceInsights } from "../services/performanceApi";
 import { TOKEN_STORAGE_KEY } from "../services/api";
-import { connectNotificationSocket } from "../services/socket";
+import { connectNotificationChannel } from "../services/pusher";
 import { toRoleLabel } from "../utils/roles";
 
 const STORAGE_KEY = "pragatidesk-session";
@@ -426,7 +426,8 @@ export const useDashboardData = () => {
 
     syncNotifications();
 
-    const socket = connectNotificationSocket({
+    const notificationChannel = connectNotificationChannel({
+      userId: currentUser.id,
       onNotification: (notification) => {
         if (!isMounted) {
           return;
@@ -449,7 +450,7 @@ export const useDashboardData = () => {
 
     return () => {
       isMounted = false;
-      socket?.close();
+      notificationChannel?.unsubscribe();
     };
   }, [currentUser]);
 
