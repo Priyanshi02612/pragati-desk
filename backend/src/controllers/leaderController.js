@@ -50,6 +50,16 @@ const createTask = async (req, res) => {
       return res.status(400).json({ message: "Invalid due date" });
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    parsedDueDate.setHours(0, 0, 0, 0);
+
+    if (parsedDueDate < today) {
+      return res
+        .status(400)
+        .json({ message: "Due date cannot be in the past" });
+    }
+
     const taskNumber = await getNextTaskNumber(ticket._id, ticket.ticketNumber);
 
     const task = await Task.create({

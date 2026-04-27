@@ -6,6 +6,14 @@ import { Card } from "../components/ui/Card";
 import { InputField } from "../components/ui/InputField";
 import { Table } from "../components/ui/Table";
 
+const getTodayDate = () => {
+  const today = new Date();
+  const timezoneAdjusted = new Date(
+    today.getTime() - today.getTimezoneOffset() * 60 * 1000,
+  );
+  return timezoneAdjusted.toISOString().split("T")[0];
+};
+
 export const TeamLeaderTasksPage = () => {
   const {
     createTask,
@@ -16,11 +24,13 @@ export const TeamLeaderTasksPage = () => {
     tickets,
     users,
   } = useAppContext();
+
+  const todayDate = getTodayDate();
   const [taskForm, setTaskForm] = useState({
     ticketId: "",
     title: "",
     assigneeId: "",
-    dueDate: "2026-04-18",
+    dueDate: todayDate,
   });
 
   const assignedTickets = useMemo(
@@ -154,7 +164,7 @@ export const TeamLeaderTasksPage = () => {
                 ticketId: assignedTickets[0]?.id || "",
                 title: "",
                 assigneeId: employeeOptions[0]?.id || "",
-                dueDate: "2026-04-18",
+                dueDate: "",
               });
             }}
           >
@@ -203,6 +213,7 @@ export const TeamLeaderTasksPage = () => {
               label="Due date"
               type="date"
               value={taskForm.dueDate}
+              min={todayDate}
               onChange={(event) =>
                 setTaskForm((current) => ({
                   ...current,
@@ -216,7 +227,8 @@ export const TeamLeaderTasksPage = () => {
               disabled={
                 !taskForm.ticketId ||
                 !taskForm.title.trim() ||
-                !taskForm.assigneeId
+                !taskForm.assigneeId ||
+                !taskForm.dueDate
               }
             >
               Assign task
