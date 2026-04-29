@@ -32,17 +32,11 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ✅ DB connection caching (CRITICAL)
-let isConnected = false;
-
 app.use(async (req, res, next) => {
-  if (!isConnected) {
-    await connectDB();
-    await ensureFixedAdminUser();
-    isConnected = true;
-    console.log("Cold start → DB connected");
-  }
+  await connectDB();
   next();
 });
 
