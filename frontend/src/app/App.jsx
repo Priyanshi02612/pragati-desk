@@ -11,6 +11,8 @@ import { EmployeeTasksPage } from "../pages/EmployeeTasksPage";
 import { LeaderboardPage } from "../pages/LeaderboardPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PerformancePage } from "../pages/PerformancePage";
+import { ProjectDetailsPage } from "../pages/ProjectDetailsPage";
+import { ProjectsPage } from "../pages/ProjectsPage";
 import { TeamLeaderDashboardPage } from "../pages/TeamLeaderDashboardPage";
 import { TeamLeaderTasksPage } from "../pages/TeamLeaderTasksPage";
 
@@ -147,6 +149,28 @@ function App() {
                 allowedRoles={["Employee"]}
               >
                 <EmployeeTasksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Admin", "Team Leader", "Employee"]}
+              >
+                <ProjectsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId"
+            element={
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Admin", "Team Leader", "Employee"]}
+              >
+                <ProjectDetailsPage />
               </ProtectedRoute>
             }
           />

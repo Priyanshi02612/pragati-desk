@@ -17,6 +17,10 @@ export const getStatusTone = (status) => {
     "In Progress": "bg-amber-100 text-amber-700",
     Completed: "bg-emerald-100 text-emerald-700",
     Delayed: "bg-rose-100 text-rose-700",
+    Planning: "bg-slate-100 text-slate-600",
+    Active: "bg-blue-50 text-brand-secondary",
+    "On Hold": "bg-amber-100 text-amber-700",
+    Review: "bg-violet-100 text-violet-700",
   };
 
   return tones[status] || "bg-slate-100 text-slate-600";

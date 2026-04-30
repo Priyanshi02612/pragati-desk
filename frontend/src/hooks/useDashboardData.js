@@ -20,6 +20,11 @@ import {
 import { getPerformanceInsights } from "../services/performanceApi";
 import { TOKEN_STORAGE_KEY } from "../services/api";
 import { connectNotificationChannel } from "../services/pusher";
+import {
+  mockProjectNotifications,
+  mockProjects,
+} from "../data/projectsMockData";
+import { getProjectMetrics } from "../utils/projects";
 import { toRoleLabel } from "../utils/roles";
 
 const STORAGE_KEY = "pragatidesk-session";
@@ -46,8 +51,9 @@ const initialData = {
   users: [],
   tickets: [],
   tasks: [],
-  notifications: [],
+  notifications: mockProjectNotifications,
   delayRequests: [],
+  projects: mockProjects,
   performanceSeries: emptyPerformanceSeries,
   leaderboard: emptyLeaderboard,
 };
@@ -477,6 +483,11 @@ export const useDashboardData = () => {
     };
   }, [data]);
 
+  const projectMetrics = useMemo(
+    () => getProjectMetrics(data.projects || []),
+    [data.projects],
+  );
+
   const login = async (credentials) => {
     const response = await loginUser(credentials);
     const nextUser = attachDashboardProfile(
@@ -692,11 +703,104 @@ export const useDashboardData = () => {
     }));
   };
 
+  const createProject = (payload) => {
+    const initialFiles = payload.files || [];
+    const productivitySeed = payload.teamMembers.length
+      ? payload.teamMembers.map((member) => ({
+          name: member.name.split(" ")[0],
+          value: member.performance || 78,
+        }))
+      : [
+          {
+            name: payload.teamLeader.name.split(" ")[0],
+            value: 78,
+          },
+        ];
+
+    const project = {
+      id: `PRJ-${Date.now()}`,
+      progress: payload.status === "Completed" ? 100 : 12,
+      budgetSpent: payload.budgetSpent || 0,
+      files: initialFiles,
+      milestones: [
+        {
+          id: `MS-${Date.now()}`,
+          title: "Kickoff planned",
+          date: payload.startDate,
+          status: "Pending",
+        },
+      ],
+      updates: ["Project created in mock frontend preview."],
+      activity: [
+        {
+          id: `ACT-${Date.now()}`,
+          type: "update",
+          title: "Project created",
+          description: `${payload.name} was created and shared with the assigned team.`,
+          actor: "Admin",
+          createdAt: new Date().toLocaleString("en-IN", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }),
+        },
+      ],
+      analytics: {
+        completionRate: [{ name: "Week 1", value: 12 }],
+        delayRatio: [
+          { name: "Planned", value: 100 },
+          { name: "Delayed", value: 0 },
+        ],
+        productivity: productivitySeed,
+        weeklyProgress: [
+          { name: "Mon", value: 8 },
+          { name: "Tue", value: 10 },
+          { name: "Wed", value: 12 },
+        ],
+      },
+      tasks: [],
+      ...payload,
+    };
+
+    setData((current) => ({
+      ...current,
+      projects: [project, ...current.projects],
+      notifications: [
+        {
+          id: `NTF-${Date.now()}`,
+          title: "New project assigned",
+          message: `${project.name} is now assigned to ${project.teamLeader.name}.`,
+          type: "assignment",
+          read: false,
+          role: "Team Leader",
+          targetUserId: project.teamLeader.id,
+        },
+        ...current.notifications,
+      ],
+    }));
+  };
+
+  const updateProject = (projectId, updates) => {
+    setData((current) => ({
+      ...current,
+      projects: current.projects.map((project) =>
+        project.id === projectId ? { ...project, ...updates } : project,
+      ),
+    }));
+  };
+
+  const deleteProject = (projectId) => {
+    setData((current) => ({
+      ...current,
+      projects: current.projects.filter((project) => project.id !== projectId),
+    }));
+  };
+
   return {
     ...data,
     currentUser,
     isSessionReady,
     metrics,
+    projectMetrics,
     login,
     logout,
     createEmployee,
@@ -709,6 +813,9 @@ export const useDashboardData = () => {
     submitDelayRequest,
     reviewDelayRequest,
     markNotificationRead,
+    createProject,
+    updateProject,
+    deleteProject,
     setCurrentUser,
   };
 };
