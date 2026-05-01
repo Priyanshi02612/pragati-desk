@@ -69,7 +69,16 @@ const attachDashboardProfile = (user, users) => {
     return null;
   }
 
-  const profileMatch = users.find((item) => item.role === user.role);
+  const profileMatch = users.find((item) => {
+    const itemId = item.id || item._id;
+    const itemAuthId = item.authId || itemId;
+
+    return (
+      itemAuthId === user.id ||
+      itemId === user.id ||
+      (item.email && user.email && item.email === user.email)
+    );
+  });
 
   if (!profileMatch) {
     return user;
@@ -78,7 +87,7 @@ const attachDashboardProfile = (user, users) => {
   return {
     ...profileMatch,
     ...user,
-    id: profileMatch.id,
+    id: user.id,
     authId: user.id,
     avatar: user.avatar || profileMatch.avatar,
   };
@@ -427,7 +436,7 @@ export const useDashboardData = () => {
     syncNotifications();
 
     const notificationChannel = connectNotificationChannel({
-      userId: currentUser.id,
+      userId: currentUser.authId || currentUser.id,
       onNotification: (notification) => {
         if (!isMounted) {
           return;

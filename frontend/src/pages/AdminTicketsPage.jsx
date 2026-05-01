@@ -17,6 +17,7 @@ import {
   TICKET_TYPES,
 } from "../constants/tickets";
 import { getAdminLeaders } from "../services/adminApi";
+import { Modal } from "../components/ui/Modal";
 
 const normalizeLeader = (leader) => ({
   ...leader,
@@ -36,6 +37,7 @@ export const AdminTicketsPage = () => {
     department: DEFAULT_DEPARTMENT,
     assignedLeaderId: leaders[0]?.id || "",
   });
+  const [ticketModalOpen, setTicketModalOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -151,154 +153,156 @@ export const AdminTicketsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <Card>
-          <div className="mb-5">
-            <h2 className="section-title">Create Ticket</h2>
-            <p className="section-copy">
-              Add a title and clear description so team leaders and employees
-              understand the work.
-            </p>
-          </div>
-          <form
-            className="space-y-4"
-            onSubmit={(event) => {
-              handleFormSubmit(event);
-            }}
-          >
-            <InputField
-              label="Ticket title"
-              value={ticketForm.title}
-              placeholder="Enter ticket summary"
-              onChange={(event) =>
-                setTicketForm((current) => ({
-                  ...current,
-                  title: event.target.value,
-                }))
-              }
-            />
-            <InputField
-              label="Ticket description"
-              as="textarea"
-              rows="5"
-              value={ticketForm.description}
-              placeholder="Explain the goal, expected output, and any important context."
-              onChange={(event) =>
-                setTicketForm((current) => ({
-                  ...current,
-                  description: event.target.value,
-                }))
-              }
-            />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <InputField
-                label="Ticket type"
-                as="select"
-                value={ticketForm.ticketType}
-                options={TICKET_TYPES.map((type) => ({
-                  value: type,
-                  label: type,
-                }))}
-                onChange={(event) =>
-                  setTicketForm((current) => ({
-                    ...current,
-                    ticketType: event.target.value,
-                  }))
-                }
-              />
-              <InputField
-                label="Priority"
-                as="select"
-                value={ticketForm.priority}
-                options={TICKET_PRIORITIES.map((priority) => ({
-                  value: priority,
-                  label: priority,
-                }))}
-                onChange={(event) =>
-                  setTicketForm((current) => ({
-                    ...current,
-                    priority: event.target.value,
-                  }))
-                }
-              />
-            </div>
-            <InputField
-              label="Department"
-              as="select"
-              value={ticketForm.department}
-              options={DEPARTMENT_OPTIONS.map((department) => ({
-                value: department,
-                label: department,
-              }))}
-              onChange={(event) =>
-                setTicketForm((current) => ({
-                  ...current,
-                  department: event.target.value,
-                }))
-              }
-            />
-            <InputField
-              label="Assign to Team Leader"
-              as="select"
-              value={ticketForm.assignedLeaderId}
-              options={leaders.map((leader) => ({
-                value: leader.id,
-                label: leader.name,
-              }))}
-              onChange={(event) =>
-                setTicketForm((current) => ({
-                  ...current,
-                  assignedLeaderId: event.target.value,
-                }))
-                }
-              />
-            {ticketForm.assignedLeaderId ? (
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                <Avatar
-                  src={leaderLookup.get(ticketForm.assignedLeaderId)?.avatar}
-                  name={leaderLookup.get(ticketForm.assignedLeaderId)?.name}
-                  size="sm"
-                />
-                <div>
-                  <p className="text-sm font-medium text-brand-text">
-                    {leaderLookup.get(ticketForm.assignedLeaderId)?.name ||
-                      "Selected leader"}
-                  </p>
-                  <p className="text-xs text-brand-muted">
-                    {leaderLookup.get(ticketForm.assignedLeaderId)?.department ||
-                      "Team Leader"}
-                  </p>
-                </div>
-              </div>
-            ) : null}
-            <Button
-              className="w-full disabled:cursor-not-allowed disabled:opacity-60"
-              type="submit"
-              variant="secondary"
-              disabled={
-                isSubmitting ||
-                !ticketForm.title.trim() ||
-                !ticketForm.description.trim() ||
-                !ticketForm.ticketType ||
-                !ticketForm.assignedLeaderId
-              }
-            >
-              {isSubmitting ? "Submitting..." : "Submit ticket"}
-            </Button>
-          </form>
-        </Card>
-
-        <Card>
-          <div className="mb-5">
+      <Card>
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div>
             <h2 className="section-title">Tickets</h2>
             <p className="section-copy">
               Manage ticket details separately from employee records for better
               focus.
             </p>
           </div>
-          <Table columns={ticketColumns} rows={tickets} />
-        </Card>
-      </div>
+
+          <Button onClick={() => setTicketModalOpen(true)}>
+            Create ticket
+          </Button>
+        </div>
+        <Table columns={ticketColumns} rows={tickets} />
+      </Card>
+
+      <Modal
+        title="Create Ticket"
+        description="Add a title and clear description so team leaders and employees understand the work."
+        isOpen={ticketModalOpen}
+        onClose={() => setTicketModalOpen(false)}
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            handleFormSubmit(event);
+          }}
+        >
+          <InputField
+            label="Ticket title"
+            value={ticketForm.title}
+            placeholder="Enter ticket summary"
+            onChange={(event) =>
+              setTicketForm((current) => ({
+                ...current,
+                title: event.target.value,
+              }))
+            }
+          />
+          <InputField
+            label="Ticket description"
+            as="textarea"
+            rows="5"
+            value={ticketForm.description}
+            placeholder="Explain the goal, expected output, and any important context."
+            onChange={(event) =>
+              setTicketForm((current) => ({
+                ...current,
+                description: event.target.value,
+              }))
+            }
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <InputField
+              label="Ticket type"
+              as="select"
+              value={ticketForm.ticketType}
+              options={TICKET_TYPES.map((type) => ({
+                value: type,
+                label: type,
+              }))}
+              onChange={(event) =>
+                setTicketForm((current) => ({
+                  ...current,
+                  ticketType: event.target.value,
+                }))
+              }
+            />
+            <InputField
+              label="Priority"
+              as="select"
+              value={ticketForm.priority}
+              options={TICKET_PRIORITIES.map((priority) => ({
+                value: priority,
+                label: priority,
+              }))}
+              onChange={(event) =>
+                setTicketForm((current) => ({
+                  ...current,
+                  priority: event.target.value,
+                }))
+              }
+            />
+          </div>
+          <InputField
+            label="Department"
+            as="select"
+            value={ticketForm.department}
+            options={DEPARTMENT_OPTIONS.map((department) => ({
+              value: department,
+              label: department,
+            }))}
+            onChange={(event) =>
+              setTicketForm((current) => ({
+                ...current,
+                department: event.target.value,
+              }))
+            }
+          />
+          <InputField
+            label="Assign to Team Leader"
+            as="select"
+            value={ticketForm.assignedLeaderId}
+            options={leaders.map((leader) => ({
+              value: leader.id,
+              label: leader.name,
+            }))}
+            onChange={(event) =>
+              setTicketForm((current) => ({
+                ...current,
+                assignedLeaderId: event.target.value,
+              }))
+            }
+          />
+          {ticketForm.assignedLeaderId ? (
+            <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+              <Avatar
+                src={leaderLookup.get(ticketForm.assignedLeaderId)?.avatar}
+                name={leaderLookup.get(ticketForm.assignedLeaderId)?.name}
+                size="sm"
+              />
+              <div>
+                <p className="text-sm font-medium text-brand-text">
+                  {leaderLookup.get(ticketForm.assignedLeaderId)?.name ||
+                    "Selected leader"}
+                </p>
+                <p className="text-xs text-brand-muted">
+                  {leaderLookup.get(ticketForm.assignedLeaderId)?.department ||
+                    "Team Leader"}
+                </p>
+              </div>
+            </div>
+          ) : null}
+          <Button
+            className="w-full disabled:cursor-not-allowed disabled:opacity-60"
+            type="submit"
+            variant="secondary"
+            disabled={
+              isSubmitting ||
+              !ticketForm.title.trim() ||
+              !ticketForm.description.trim() ||
+              !ticketForm.ticketType ||
+              !ticketForm.assignedLeaderId
+            }
+          >
+            {isSubmitting ? "Submitting..." : "Submit ticket"}
+          </Button>
+        </form>
+      </Modal>
     </div>
   );
 };

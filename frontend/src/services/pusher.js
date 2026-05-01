@@ -6,13 +6,21 @@ const PUSHER_CLUSTER = import.meta.env.VITE_PUSHER_CLUSTER;
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 let pusherClient = null;
+let pusherClientToken = null;
 
 const getUserNotificationChannel = (userId) => `private-user-${userId}`;
 const PUSHER_AUTH_ENDPOINT = `${API_BASE_URL.replace(/\/api$/, "")}/api/notifications/pusher/auth`;
 
 const getPusherClient = () => {
+  const token = window.localStorage.getItem(TOKEN_STORAGE_KEY) || "";
+
   if (!PUSHER_KEY || !PUSHER_CLUSTER) {
     return null;
+  }
+
+  if (pusherClient && pusherClientToken !== token) {
+    pusherClient.disconnect();
+    pusherClient = null;
   }
 
   if (!pusherClient) {
@@ -22,10 +30,11 @@ const getPusherClient = () => {
         endpoint: PUSHER_AUTH_ENDPOINT,
         transport: "ajax",
         headers: {
-          Authorization: `Bearer ${window.localStorage.getItem(TOKEN_STORAGE_KEY) || ""}`,
+          Authorization: `Bearer ${token}`,
         },
       },
     });
+    pusherClientToken = token;
   }
 
   return pusherClient;

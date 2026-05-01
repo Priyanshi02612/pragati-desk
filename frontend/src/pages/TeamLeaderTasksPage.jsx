@@ -5,6 +5,7 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { InputField } from "../components/ui/InputField";
 import { Table } from "../components/ui/Table";
+import { Modal } from "../components/ui/Modal";
 
 const getTodayDate = () => {
   const today = new Date();
@@ -32,6 +33,7 @@ export const TeamLeaderTasksPage = () => {
     assigneeId: "",
     dueDate: todayDate,
   });
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
 
   const assignedTickets = useMemo(
     () =>
@@ -70,7 +72,7 @@ export const TeamLeaderTasksPage = () => {
   const taskColumns = [
     {
       key: "taskNumber",
-      label: "Task Number",
+      label: "Task",
       render: (row) => `${row.taskNumber} • ${row.title}` || "Pending",
     },
     {
@@ -147,105 +149,21 @@ export const TeamLeaderTasksPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <Card>
-          <div className="mb-5">
-            <h2 className="section-title">Create and Assign Tasks</h2>
-            <p className="section-copy">
-              Break tickets into actionable tasks for employees.
-            </p>
-          </div>
-          <form
-            className="space-y-4"
-            onSubmit={async (event) => {
-              event.preventDefault();
-              await createTask(taskForm);
-              setTaskForm({
-                ticketId: assignedTickets[0]?.id || "",
-                title: "",
-                assigneeId: employeeOptions[0]?.id || "",
-                dueDate: "",
-              });
-            }}
-          >
-            <InputField
-              label="Ticket"
-              as="select"
-              value={taskForm.ticketId}
-              options={assignedTickets.map((ticket) => ({
-                value: ticket.id,
-                label: `${ticket.ticketNumber || ticket.id} • ${ticket.title}`,
-              }))}
-              onChange={(event) =>
-                setTaskForm((current) => ({
-                  ...current,
-                  ticketId: event.target.value,
-                }))
-              }
-            />
-            <InputField
-              label="Task title"
-              value={taskForm.title}
-              placeholder="Describe the next action"
-              onChange={(event) =>
-                setTaskForm((current) => ({
-                  ...current,
-                  title: event.target.value,
-                }))
-              }
-            />
-            <InputField
-              label="Assign to employee"
-              as="select"
-              value={taskForm.assigneeId}
-              options={employeeOptions.map((employee) => ({
-                value: employee.id,
-                label: employee.name,
-              }))}
-              onChange={(event) =>
-                setTaskForm((current) => ({
-                  ...current,
-                  assigneeId: event.target.value,
-                }))
-              }
-            />
-            <InputField
-              label="Due date"
-              type="date"
-              value={taskForm.dueDate}
-              min={todayDate}
-              onChange={(event) =>
-                setTaskForm((current) => ({
-                  ...current,
-                  dueDate: event.target.value,
-                }))
-              }
-            />
-            <Button
-              className="w-full disabled:cursor-not-allowed disabled:opacity-60"
-              type="submit"
-              disabled={
-                !taskForm.ticketId ||
-                !taskForm.title.trim() ||
-                !taskForm.assigneeId ||
-                !taskForm.dueDate
-              }
-            >
-              Assign task
-            </Button>
-          </form>
-        </Card>
-
-        <Card>
-          <div className="mb-5">
+      <Card>
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div>
             <h2 className="section-title">Tasks Overview</h2>
             <p className="section-copy">
               Track progress across all tasks in your queue.
             </p>
           </div>
-          <Table columns={taskColumns} rows={teamTasks} />
-        </Card>
-      </div>
+
+          <Button onClick={() => setTaskModalOpen(true)}>
+            Create Task
+          </Button>
+        </div>
+        <Table columns={taskColumns} rows={teamTasks} />
+      </Card>
 
       <Card>
         <div className="mb-5">
@@ -262,6 +180,93 @@ export const TeamLeaderTasksPage = () => {
           </div>
         )}
       </Card>
+
+      <Modal
+        title="Create and Assign Tasks"
+        description="Break tickets into actionable tasks for employees."
+        isOpen={taskModalOpen}
+        onClose={() => setTaskModalOpen(false)}
+      >
+        <form
+          className="space-y-4"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            await createTask(taskForm);
+            setTaskForm({
+              ticketId: assignedTickets[0]?.id || "",
+              title: "",
+              assigneeId: employeeOptions[0]?.id || "",
+              dueDate: "",
+            });
+          }}
+        >
+          <InputField
+            label="Ticket"
+            as="select"
+            value={taskForm.ticketId}
+            options={assignedTickets.map((ticket) => ({
+              value: ticket.id,
+              label: `${ticket.ticketNumber || ticket.id} • ${ticket.title}`,
+            }))}
+            onChange={(event) =>
+              setTaskForm((current) => ({
+                ...current,
+                ticketId: event.target.value,
+              }))
+            }
+          />
+          <InputField
+            label="Task title"
+            value={taskForm.title}
+            placeholder="Describe the next action"
+            onChange={(event) =>
+              setTaskForm((current) => ({
+                ...current,
+                title: event.target.value,
+              }))
+            }
+          />
+          <InputField
+            label="Assign to employee"
+            as="select"
+            value={taskForm.assigneeId}
+            options={employeeOptions.map((employee) => ({
+              value: employee.id,
+              label: employee.name,
+            }))}
+            onChange={(event) =>
+              setTaskForm((current) => ({
+                ...current,
+                assigneeId: event.target.value,
+              }))
+            }
+          />
+          <InputField
+            label="Due date"
+            type="date"
+            value={taskForm.dueDate}
+            min={todayDate}
+            onChange={(event) =>
+              setTaskForm((current) => ({
+                ...current,
+                dueDate: event.target.value,
+              }))
+            }
+          />
+          <Button
+            className="w-full disabled:cursor-not-allowed disabled:opacity-60"
+            type="submit"
+            disabled={
+              !taskForm.ticketId ||
+              !taskForm.title.trim() ||
+              !taskForm.assigneeId ||
+              !taskForm.dueDate
+            }
+          >
+            Assign task
+          </Button>
+        </form>
+      </Modal>
     </div>
   );
 };
