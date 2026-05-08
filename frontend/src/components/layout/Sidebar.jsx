@@ -6,6 +6,7 @@ import {
   LogOut,
   ShieldCheck,
   Ticket,
+  Settings,
   UserSquare2,
   Users,
 } from "lucide-react";
@@ -20,19 +21,18 @@ const roleConfig = {
     { label: "Employees", to: "/admin/employees", icon: Users },
     { label: "Tickets", to: "/admin/tickets", icon: Ticket },
     { label: "Performance", to: "/performance", icon: BarChart3 },
-    { label: "Leaderboard", to: "/leaderboard", icon: Crown },
+    { label: "Leaderboard", to: "/admin/leaderboard", icon: Crown },
   ],
   "Team Leader": [
     { label: "Overview", to: "/team-leader", icon: ShieldCheck, end: true },
     { label: "Tasks", to: "/team-leader/tasks", icon: ListTodo },
     { label: "Performance", to: "/performance", icon: BarChart3 },
-    { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],
   Employee: [
     { label: "Overview", to: "/employee", icon: UserSquare2, end: true },
     { label: "My Tasks", to: "/employee/tasks", icon: ListTodo },
+    { label: "Profile", to: "/employee/profile", icon: Settings },
     { label: "Performance", to: "/performance", icon: BarChart3 },
-    { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],
 };
 

@@ -4,11 +4,12 @@ import { Loader } from "../components/ui/Loader";
 import { useDashboardData } from "../hooks/useDashboardData";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { AdminDashboardPage } from "../pages/AdminDashboardPage";
+import { AdminLeaderboardPage } from "../pages/AdminLeaderboardPage";
 import { AdminEmployeesPage } from "../pages/AdminEmployeesPage";
 import { AdminTicketsPage } from "../pages/AdminTicketsPage";
 import { EmployeeDashboardPage } from "../pages/EmployeeDashboardPage";
+import { EmployeeProfileSettingsPage } from "../pages/EmployeeProfileSettingsPage";
 import { EmployeeTasksPage } from "../pages/EmployeeTasksPage";
-import { LeaderboardPage } from "../pages/LeaderboardPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PerformancePage } from "../pages/PerformancePage";
 import { TeamLeaderDashboardPage } from "../pages/TeamLeaderDashboardPage";
@@ -107,6 +108,17 @@ function App() {
             }
           />
           <Route
+            path="/admin/leaderboard"
+            element={
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Admin"]}
+              >
+                <AdminLeaderboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/team-leader"
             element={
               <ProtectedRoute
@@ -150,8 +162,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/employee/profile"
+            element={
+              <ProtectedRoute
+                currentUser={state.currentUser}
+                allowedRoles={["Employee"]}
+              >
+                <EmployeeProfileSettingsPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/performance" element={<PerformancePage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

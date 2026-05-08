@@ -13,11 +13,14 @@ const getInitials = (name) => {
 };
 
 export const Avatar = ({ src, name, size = "md" }) => {
-  const sizeClassName = {
-    sm: "h-8 w-8 text-xs",
-    md: "h-10 w-10 text-sm",
-    lg: "h-12 w-12 text-base",
-  }[size] || "h-10 w-10 text-sm";
+  const sizeClassName =
+    {
+      sm: "h-8 w-8 text-xs",
+      md: "h-10 w-10 text-sm",
+      lg: "h-12 w-12 text-base",
+      xl: "h-16 w-16 text-lg",
+      "2xl": "h-20 w-20 text-xl",
+    }[size] || "h-10 w-10 text-sm";
 
   if (src) {
     return (

@@ -11,6 +11,12 @@ export const getCurrentUser = () =>
     method: "GET",
   });
 
+export const updateCurrentUserProfile = (payload) =>
+  apiRequest("/auth/me", {
+    method: "PATCH",
+    body: payload,
+  });
+
 export const registerUser = (payload) => {
   return apiRequest("/auth/register", {
     method: "POST",

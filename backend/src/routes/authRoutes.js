@@ -1,5 +1,5 @@
 const express = require("express");
-const { login, register } = require("../controllers/authController");
+const { login, register, updateProfile } = require("../controllers/authController");
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.post("/login", login);
 router.get("/me", verifyToken, (req, res) => {
   res.status(200).json({ user: req.user });
 });
+router.patch("/me", verifyToken, updateProfile);
 
 router.get("/admin", verifyToken, authorizeRoles("admin"), (_req, res) => {
   res.status(200).json({ message: "Admin access granted" });

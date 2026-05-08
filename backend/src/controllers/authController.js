@@ -151,7 +151,70 @@ const login = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { name, department, avatar, currentPassword, newPassword } = req.body;
+
+    if (!name?.trim() || !department?.trim()) {
+      return res.status(400).json({
+        message: "Name and department are required",
+      });
+    }
+
+    if (!DEPARTMENT_OPTIONS.includes(department.trim())) {
+      return res.status(400).json({ message: "Invalid department" });
+    }
+
+    user.name = name.trim();
+    user.department = department.trim();
+    user.avatar = avatar?.trim() || "";
+
+    if (newPassword?.trim()) {
+      if (!currentPassword?.trim()) {
+        return res.status(400).json({
+          message: "Current password is required to set a new password",
+        });
+      }
+
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+      if (!isMatch) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword.trim(), salt);
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: serializeRole(user.role),
+        department: user.department,
+        performance: user.performance,
+        avatar: user.avatar,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Unable to update profile",
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
+  updateProfile,
 };

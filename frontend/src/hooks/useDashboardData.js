@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { getCurrentUser, loginUser, registerUser } from "../services/authApi";
+import {
+  getCurrentUser,
+  loginUser,
+  registerUser,
+  updateCurrentUserProfile,
+} from "../services/authApi";
 import {
   createAdminTicket,
   getAdminUsers,
@@ -503,6 +508,44 @@ export const useDashboardData = () => {
     setCurrentUser(null);
   };
 
+  const updateProfile = async (payload) => {
+    const response = await updateCurrentUserProfile(payload);
+    const nextUser = normalizeAuthUser(response.user);
+
+    setCurrentUser((current) =>
+      current
+        ? {
+            ...current,
+            ...nextUser,
+            id: nextUser.id,
+            authId: current.authId || nextUser.id,
+          }
+        : nextUser,
+    );
+
+    setData((current) => ({
+      ...current,
+      users: current.users.map((user) => {
+        const userId = user.id || user._id;
+        const authId = user.authId || userId;
+
+        if (authId !== nextUser.id && userId !== nextUser.id) {
+          return user;
+        }
+
+        return {
+          ...user,
+          name: nextUser.name,
+          department: nextUser.department,
+          avatar: nextUser.avatar,
+          email: nextUser.email,
+        };
+      }),
+    }));
+
+    return nextUser;
+  };
+
   const createEmployee = async (payload) => {
     const response = await registerUser(payload);
     const user = normalizeAuthUser(response.user);
@@ -708,6 +751,7 @@ export const useDashboardData = () => {
     metrics,
     login,
     logout,
+    updateProfile,
     createEmployee,
     createTicket,
     createTask,

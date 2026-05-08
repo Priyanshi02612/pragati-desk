@@ -204,6 +204,13 @@ const buildLeaderboard = (employeeSummaries, tasks, currentDate) => {
   const monthRanges = createMonthRanges(2, currentDate);
   const currentMonthRange = monthRanges[1];
   const previousMonthRange = monthRanges[0];
+  const quarterStartMonth = Math.max(0, currentDate.getUTCMonth() - 2);
+  const quarterStart = new Date(
+    Date.UTC(currentDate.getUTCFullYear(), quarterStartMonth, 1),
+  );
+  const quarterEnd = new Date(
+    Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth() + 1, 1),
+  );
   const yearStart = new Date(Date.UTC(currentDate.getUTCFullYear(), 0, 1));
   const yearEnd = new Date(Date.UTC(currentDate.getUTCFullYear() + 1, 0, 1));
   const tasksByEmployee = new Map();
@@ -236,6 +243,12 @@ const buildLeaderboard = (employeeSummaries, tasks, currentDate) => {
           return createdAt >= yearStart && createdAt < yearEnd;
         }),
       );
+      const quarterScore = calculateScore(
+        employeeTasks.filter((task) => {
+          const createdAt = new Date(task.createdAt);
+          return createdAt >= quarterStart && createdAt < quarterEnd;
+        }),
+      );
 
       return {
         rank: 0,
@@ -243,6 +256,7 @@ const buildLeaderboard = (employeeSummaries, tasks, currentDate) => {
         name: employee.name,
         score: employee.performance,
         monthScore: currentMonthScore || employee.performance,
+        quarterScore: quarterScore || employee.performance,
         yearScore: yearlyScore || employee.performance,
         trend: formatTrend(currentMonthScore || employee.performance, previousMonthScore || employee.performance),
       };
@@ -254,6 +268,7 @@ const buildLeaderboard = (employeeSummaries, tasks, currentDate) => {
     }));
 
   const monthWinner = [...rankings].sort((left, right) => right.monthScore - left.monthScore || left.name.localeCompare(right.name))[0];
+  const quarterWinner = [...rankings].sort((left, right) => right.quarterScore - left.quarterScore || left.name.localeCompare(right.name))[0];
   const yearWinner = [...rankings].sort((left, right) => right.yearScore - left.yearScore || left.name.localeCompare(right.name))[0];
 
   return {
@@ -270,6 +285,19 @@ const buildLeaderboard = (employeeSummaries, tasks, currentDate) => {
           role: "Employee",
           achievement: "Monthly rankings will appear once tasks are assigned.",
         },
+    quarter: quarterWinner
+      ? {
+          name: quarterWinner.name,
+          score: quarterWinner.quarterScore,
+          role: "Employee",
+          achievement: "Top score across the current quarter for the selected scope.",
+        }
+      : {
+          name: "No data yet",
+          score: 0,
+          role: "Employee",
+          achievement: "Quarterly rankings will appear once tasks are assigned.",
+        },
     year: yearWinner
       ? {
           name: yearWinner.name,
@@ -283,7 +311,7 @@ const buildLeaderboard = (employeeSummaries, tasks, currentDate) => {
           role: "Employee",
           achievement: "Yearly rankings will appear once tasks are assigned.",
         },
-    rankings: rankings.map(({ monthScore, yearScore, ...entry }) => entry),
+    rankings,
   };
 };
 
