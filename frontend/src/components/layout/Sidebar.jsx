@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   ListTodo,
   LogOut,
+  MessageSquare,
   ShieldCheck,
   Ticket,
   UserSquare2,
@@ -19,25 +20,28 @@ const roleConfig = {
     { label: "Dashboard", to: "/admin", icon: LayoutDashboard, end: true },
     { label: "Employees", to: "/admin/employees", icon: Users },
     { label: "Tickets", to: "/admin/tickets", icon: Ticket },
+    { label: "Chat", to: "/chat", icon: MessageSquare },
     { label: "Performance", to: "/performance", icon: BarChart3 },
     { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],
   "Team Leader": [
     { label: "Overview", to: "/team-leader", icon: ShieldCheck, end: true },
     { label: "Tasks", to: "/team-leader/tasks", icon: ListTodo },
+    { label: "Chat", to: "/chat", icon: MessageSquare },
     { label: "Performance", to: "/performance", icon: BarChart3 },
     { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],
   Employee: [
     { label: "Overview", to: "/employee", icon: UserSquare2, end: true },
     { label: "My Tasks", to: "/employee/tasks", icon: ListTodo },
+    { label: "Chat", to: "/chat", icon: MessageSquare },
     { label: "Performance", to: "/performance", icon: BarChart3 },
     { label: "Leaderboard", to: "/leaderboard", icon: Crown },
   ],
 };
 
 export const Sidebar = () => {
-  const { currentUser, logout } = useAppContext();
+  const { currentUser, logout, unreadChatCount } = useAppContext();
   const links = roleConfig[currentUser.role];
 
   return (
@@ -70,7 +74,12 @@ export const Sidebar = () => {
               to={link.to}
             >
               <Icon size={18} />
-              {link.label}
+              <span className="flex-1">{link.label}</span>
+              {link.label === "Chat" && unreadChatCount ? (
+                <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-white/15 px-2 py-1 text-[0.7rem] font-bold text-current">
+                  {unreadChatCount}
+                </span>
+              ) : null}
             </NavLink>
           );
         })}

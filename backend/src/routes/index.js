@@ -1,6 +1,7 @@
 const express = require("express");
 const authRoutes = require("./authRoutes");
 const adminRoutes = require("./adminRoutes");
+const chatRoutes = require("./chatRoutes");
 const leaderRoutes = require("./leaderRoutes");
 const notificationRoutes = require("./notificationRoutes");
 const performanceRoutes = require("./performanceRoutes");
@@ -14,6 +15,7 @@ router.get("/", (_req, res) => {
 
 router.use("/auth", authRoutes);
 router.use("/admin", adminRoutes);
+router.use("/chat", chatRoutes);
 router.use("/leader", leaderRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/performance", performanceRoutes);

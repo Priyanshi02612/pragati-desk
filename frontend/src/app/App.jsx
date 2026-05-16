@@ -6,6 +6,7 @@ import { DashboardLayout } from "../layouts/DashboardLayout";
 import { AdminDashboardPage } from "../pages/AdminDashboardPage";
 import { AdminEmployeesPage } from "../pages/AdminEmployeesPage";
 import { AdminTicketsPage } from "../pages/AdminTicketsPage";
+import { ChatPage } from "../pages/ChatPage";
 import { EmployeeDashboardPage } from "../pages/EmployeeDashboardPage";
 import { EmployeeTasksPage } from "../pages/EmployeeTasksPage";
 import { LeaderboardPage } from "../pages/LeaderboardPage";
@@ -73,6 +74,10 @@ function App() {
             </ProtectedRoute>
           }
         >
+          <Route
+            path="/chat"
+            element={<ChatPage />}
+          />
           <Route
             path="/admin"
             element={

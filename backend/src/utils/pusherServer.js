@@ -17,6 +17,7 @@ const pusher = hasPusherConfig
   : null;
 
 const getUserNotificationChannel = (userId) => `private-user-${userId}`;
+const getChatEventName = () => "chat-message-created";
 
 const pushNotificationToUser = async (userId, notification) => {
   if (!pusher || !userId || !notification) {
@@ -26,6 +27,18 @@ const pushNotificationToUser = async (userId, notification) => {
   await pusher.trigger(getUserNotificationChannel(userId), "notification-created", {
     notification,
   });
+};
+
+const pushChatEventToUsers = async (userIds, payload) => {
+  if (!pusher || !Array.isArray(userIds) || !userIds.length || !payload) {
+    return;
+  }
+
+  await Promise.all(
+    [...new Set(userIds.filter(Boolean).map(String))].map((userId) =>
+      pusher.trigger(getUserNotificationChannel(userId), getChatEventName(), payload),
+    ),
+  );
 };
 
 const authorizeUserChannel = ({ socketId, userId, channelName }) => {
@@ -44,6 +57,8 @@ const authorizeUserChannel = ({ socketId, userId, channelName }) => {
 
 module.exports = {
   authorizeUserChannel,
+  getChatEventName,
   getUserNotificationChannel,
+  pushChatEventToUsers,
   pushNotificationToUser,
 };

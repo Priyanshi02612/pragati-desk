@@ -4,6 +4,7 @@ import { TOKEN_STORAGE_KEY } from "./api";
 const PUSHER_KEY = import.meta.env.VITE_PUSHER_KEY;
 const PUSHER_CLUSTER = import.meta.env.VITE_PUSHER_CLUSTER;
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const CHAT_EVENT_NAME = "chat-message-created";
 
 let pusherClient = null;
 
@@ -31,14 +32,19 @@ const getPusherClient = () => {
   return pusherClient;
 };
 
-export const connectNotificationChannel = ({ userId, onNotification }) => {
+export const connectNotificationChannel = ({
+  userId,
+  onNotification,
+  onChatMessage,
+}) => {
   const client = getPusherClient();
 
   if (!client || !userId) {
     return null;
   }
 
-  const channel = client.subscribe(getUserNotificationChannel(userId));
+  const channelName = getUserNotificationChannel(userId);
+  const channel = client.subscribe(channelName);
 
   channel.bind("notification-created", (payload) => {
     if (payload?.notification) {
@@ -46,10 +52,16 @@ export const connectNotificationChannel = ({ userId, onNotification }) => {
     }
   });
 
+  channel.bind(CHAT_EVENT_NAME, (payload) => {
+    if (payload?.conversation && payload?.message) {
+      onChatMessage?.(payload);
+    }
+  });
+
   return {
     unsubscribe: () => {
       channel.unbind_all();
-      client.unsubscribe(getUserNotificationChannel(userId));
+      client.unsubscribe(channelName);
     },
   };
 };

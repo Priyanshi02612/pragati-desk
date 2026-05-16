@@ -6,6 +6,13 @@ import {
   getTickets,
 } from "../services/adminApi";
 import {
+  createConversation as createConversationRequest,
+  getChatOverview,
+  getConversationMessages as getConversationMessagesRequest,
+  markConversationRead as markConversationReadRequest,
+  sendConversationMessage,
+} from "../services/chatApi";
+import {
   completeTask as completeTaskRequest,
   createLeaderTask,
   getTasks,
@@ -47,6 +54,9 @@ const initialData = {
   tickets: [],
   tasks: [],
   notifications: [],
+  conversations: [],
+  chatContacts: [],
+  chatMessages: {},
   delayRequests: [],
   performanceSeries: emptyPerformanceSeries,
   leaderboard: emptyLeaderboard,
@@ -152,6 +162,60 @@ const normalizeUser = (user) => {
   };
 };
 
+const normalizeChatParticipant = (user) => {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    ...user,
+    id: user.id || user._id,
+    role: toRoleLabel(user.role),
+  };
+};
+
+const normalizeConversation = (conversation) => {
+  if (!conversation) {
+    return null;
+  }
+
+  return {
+    ...conversation,
+    id: conversation.id || conversation._id,
+    participants: (conversation.participants || [])
+      .map(normalizeChatParticipant)
+      .filter(Boolean),
+    counterpart: normalizeChatParticipant(conversation.counterpart),
+    lastMessageSenderId:
+      typeof conversation.lastMessageSenderId === "object"
+        ? conversation.lastMessageSenderId?._id || conversation.lastMessageSenderId?.id
+        : conversation.lastMessageSenderId || null,
+    unreadCount: Number(conversation.unreadCount) || 0,
+  };
+};
+
+const normalizeMessage = (message) => {
+  if (!message) {
+    return null;
+  }
+
+  const sender = normalizeChatParticipant(message.sender || message.senderId);
+
+  return {
+    ...message,
+    id: message.id || message._id,
+    conversationId:
+      typeof message.conversationId === "object"
+        ? message.conversationId?._id || message.conversationId?.id
+        : message.conversationId,
+    sender,
+    senderId: sender?.id || message.senderId,
+    readBy: (message.readBy || []).map((entry) =>
+      typeof entry === "object" ? entry._id || entry.id : entry,
+    ),
+  };
+};
+
 const mergePerformanceIntoUsers = (users, performanceEmployees) => {
   const performanceById = new Map(
     performanceEmployees.map((employee) => [employee.id || employee._id, employee]),
@@ -185,6 +249,42 @@ const mergeNotifications = (currentNotifications, incomingNotifications) => {
     const leftTime = new Date(left.createdAt || 0).getTime();
     const rightTime = new Date(right.createdAt || 0).getTime();
     return rightTime - leftTime;
+  });
+};
+
+const mergeConversations = (currentConversations, incomingConversations) => {
+  const conversationMap = new Map(
+    currentConversations.map((conversation) => [conversation.id, conversation]),
+  );
+
+  incomingConversations.forEach((conversation) => {
+    conversationMap.set(conversation.id, {
+      ...(conversationMap.get(conversation.id) || {}),
+      ...conversation,
+    });
+  });
+
+  return Array.from(conversationMap.values()).sort((left, right) => {
+    const leftTime = new Date(left.lastMessageAt || left.updatedAt || 0).getTime();
+    const rightTime = new Date(right.lastMessageAt || right.updatedAt || 0).getTime();
+    return rightTime - leftTime;
+  });
+};
+
+const mergeMessages = (currentMessages, incomingMessages) => {
+  const messageMap = new Map(currentMessages.map((message) => [message.id, message]));
+
+  incomingMessages.forEach((message) => {
+    messageMap.set(message.id, {
+      ...(messageMap.get(message.id) || {}),
+      ...message,
+    });
+  });
+
+  return Array.from(messageMap.values()).sort((left, right) => {
+    const leftTime = new Date(left.createdAt || 0).getTime();
+    const rightTime = new Date(right.createdAt || 0).getTime();
+    return leftTime - rightTime;
   });
 };
 
@@ -446,11 +546,74 @@ export const useDashboardData = () => {
           ]),
         }));
       },
+      onChatMessage: ({ conversation, message }) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const normalizedConversation = normalizeConversation(conversation);
+        const normalizedMessage = normalizeMessage(message);
+
+        if (!normalizedConversation || !normalizedMessage) {
+          return;
+        }
+
+        setData((current) => ({
+          ...current,
+          conversations: mergeConversations(current.conversations, [
+            normalizedConversation,
+          ]),
+          chatMessages: {
+            ...current.chatMessages,
+            [normalizedConversation.id]: mergeMessages(
+              current.chatMessages[normalizedConversation.id] || [],
+              [normalizedMessage],
+            ),
+          },
+        }));
+      },
     });
 
     return () => {
       isMounted = false;
       notificationChannel?.unsubscribe();
+    };
+  }, [currentUser]);
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+
+    if (!token || !currentUser) {
+      return;
+    }
+
+    let isMounted = true;
+
+    getChatOverview()
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setData((current) => ({
+          ...current,
+          chatContacts: (response.contacts || [])
+            .map(normalizeChatParticipant)
+            .filter(Boolean),
+          conversations: mergeConversations(
+            current.conversations,
+            (response.conversations || [])
+              .map(normalizeConversation)
+              .filter(Boolean),
+          ),
+        }));
+      })
+      .catch(() => {
+        // Keep the existing local chat state if the fetch fails.
+      });
+
+    return () => {
+      isMounted = false;
     };
   }, [currentUser]);
 
@@ -476,6 +639,15 @@ export const useDashboardData = () => {
       averagePerformance,
     };
   }, [data]);
+
+  const unreadChatCount = useMemo(
+    () =>
+      data.conversations.reduce(
+        (sum, conversation) => sum + (Number(conversation.unreadCount) || 0),
+        0,
+      ),
+    [data.conversations],
+  );
 
   const login = async (credentials) => {
     const response = await loginUser(credentials);
@@ -692,11 +864,77 @@ export const useDashboardData = () => {
     }));
   };
 
+  const createConversation = async (participantId) => {
+    const response = await createConversationRequest(participantId);
+    const conversation = normalizeConversation(response.conversation);
+
+    if (!conversation) {
+      throw new Error("Unable to create conversation");
+    }
+
+    setData((current) => ({
+      ...current,
+      conversations: mergeConversations(current.conversations, [conversation]),
+    }));
+
+    return conversation;
+  };
+
+  const loadConversationMessages = async (conversationId) => {
+    const response = await getConversationMessagesRequest(conversationId);
+    const messages = (response.messages || []).map(normalizeMessage).filter(Boolean);
+
+    setData((current) => ({
+      ...current,
+      chatMessages: {
+        ...current.chatMessages,
+        [conversationId]: mergeMessages(current.chatMessages[conversationId] || [], messages),
+      },
+    }));
+
+    return messages;
+  };
+
+  const sendChatMessage = async (conversationId, content) => {
+    const response = await sendConversationMessage(conversationId, content);
+    const conversation = normalizeConversation(response.conversation);
+    const message = normalizeMessage(response.message);
+
+    if (!conversation || !message) {
+      throw new Error("Unable to send message");
+    }
+
+    setData((current) => ({
+      ...current,
+      conversations: mergeConversations(current.conversations, [conversation]),
+      chatMessages: {
+        ...current.chatMessages,
+        [conversation.id]: mergeMessages(current.chatMessages[conversation.id] || [], [message]),
+      },
+    }));
+
+    return { conversation, message };
+  };
+
+  const markChatConversationRead = async (conversationId) => {
+    setData((current) => ({
+      ...current,
+      conversations: current.conversations.map((conversation) =>
+        conversation.id === conversationId
+          ? { ...conversation, unreadCount: 0 }
+          : conversation,
+      ),
+    }));
+
+    await markConversationReadRequest(conversationId).catch(() => null);
+  };
+
   return {
     ...data,
     currentUser,
     isSessionReady,
     metrics,
+    unreadChatCount,
     login,
     logout,
     createEmployee,
@@ -709,6 +947,10 @@ export const useDashboardData = () => {
     submitDelayRequest,
     reviewDelayRequest,
     markNotificationRead,
+    createConversation,
+    loadConversationMessages,
+    sendChatMessage,
+    markChatConversationRead,
     setCurrentUser,
   };
 };
